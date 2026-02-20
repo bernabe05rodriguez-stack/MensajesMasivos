@@ -621,7 +621,7 @@
 
             contactRows.forEach(c => {
                 const msg = buildMessage(c.row);
-                const row = [c.number, msg];
+                const row = ['+549' + c.number + ',', msg];
                 extraCols.forEach(col => { row.push(c.row[col] || ''); });
                 lines.push(row.map(csvField).join(sep));
             });
