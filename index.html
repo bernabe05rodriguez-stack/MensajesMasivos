@@ -8,8 +8,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0a0a0a;
-            color: #d4d4d4;
+            background: #111318;
+            color: #c8cdd5;
             min-height: 100vh;
         }
         .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px; }
@@ -17,167 +17,199 @@
         /* Header */
         .header {
             text-align: center;
-            padding: 32px 0 28px;
+            padding: 40px 0 32px;
         }
         .header h1 {
-            font-size: 1.4rem;
-            font-weight: 300;
-            color: #a3a3a3;
-            letter-spacing: 2px;
+            font-size: 1rem;
+            font-weight: 400;
+            color: #6b7280;
+            letter-spacing: 3px;
             text-transform: uppercase;
         }
         .header .brand {
-            font-size: 2.4rem;
+            font-size: 2.8rem;
             font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 6px;
-            margin-top: 2px;
+            color: #fff;
+            letter-spacing: 8px;
+            margin-top: 4px;
+            text-shadow: 0 0 40px rgba(99,102,241,0.3), 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .header .line {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6366f1, transparent);
+            margin: 14px auto 0;
         }
 
         /* Steps */
         .step {
-            background: #141414;
-            border-radius: 16px;
+            background: #1a1d24;
+            border-radius: 14px;
             padding: 24px;
             margin-bottom: 14px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+            border: 1px solid #262a33;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03);
             transition: opacity 0.3s;
         }
-        .step.disabled { opacity: 0.3; pointer-events: none; }
+        .step.disabled { opacity: 0.25; pointer-events: none; }
         h2 {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #525252;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #9ca3af;
             margin-bottom: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.5px;
+        }
+        h2 .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px; height: 22px;
+            border-radius: 6px;
+            background: #6366f1;
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-right: 8px;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.3);
         }
 
         /* Upload */
         .upload-area {
-            border: 1px dashed #333;
+            border: 2px dashed #2d3140;
             border-radius: 12px;
-            padding: 44px;
+            padding: 48px 24px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
+            background: #15171e;
         }
         .upload-area:hover, .upload-area.dragover {
-            border-color: #fff;
-            background: rgba(255,255,255,0.02);
+            border-color: #6366f1;
+            background: rgba(99,102,241,0.04);
+            box-shadow: 0 0 24px rgba(99,102,241,0.08);
         }
         .upload-area.hidden { display: none; }
         .upload-area input { display: none; }
-        .upload-area p { color: #525252; font-size: 0.9rem; }
-        .upload-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.4; }
+        .upload-area p { color: #6b7280; font-size: 0.9rem; }
+        .upload-area p strong { color: #9ca3af; }
+        .upload-icon { font-size: 2.2rem; margin-bottom: 10px; }
 
         .file-loaded {
             display: none;
             padding: 16px 20px;
-            background: #1a1a1a;
+            background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(74,222,128,0.02));
+            border: 1px solid rgba(74,222,128,0.2);
             border-radius: 10px;
             animation: fadeIn 0.4s ease-out;
         }
         .file-loaded.show { display: flex; align-items: center; gap: 14px; }
         .file-loaded .file-name { flex: 1; color: #4ade80; font-weight: 600; font-size: 0.95rem; }
-        .file-loaded .file-stats { color: #525252; font-size: 0.8rem; }
+        .file-loaded .file-stats { color: #6b7280; font-size: 0.8rem; }
         .btn-remove {
-            background: transparent; color: #ef4444; border: 1px solid #ef4444;
+            background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25);
             padding: 6px 14px; border-radius: 8px; cursor: pointer;
             font-size: 0.8rem; font-weight: 500; transition: all 0.2s;
         }
-        .btn-remove:hover { background: #ef4444; color: #fff; }
+        .btn-remove:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
 
-        .loading-overlay { display: none; padding: 44px; text-align: center; }
+        .loading-overlay { display: none; padding: 48px; text-align: center; }
         .loading-overlay.show { display: block; }
         .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid #222; border-top-color: #fff;
+            width: 42px; height: 42px;
+            border: 3px solid #262a33; border-top-color: #6366f1;
             border-radius: 50%; animation: spin 0.7s linear infinite;
             margin: 0 auto 14px;
         }
-        .loading-overlay p { color: #525252; font-size: 0.85rem; }
+        .loading-overlay p { color: #6b7280; font-size: 0.85rem; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Toggle chips (phone cols & column selector) */
-        .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
         .chip {
-            padding: 7px 14px;
+            padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.82rem;
-            border: 1px solid #262626;
-            background: #1a1a1a;
-            color: #525252;
+            border: 1px solid #2d3140;
+            background: #15171e;
+            color: #6b7280;
             transition: all 0.2s;
             user-select: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
         }
-        .chip:hover { border-color: #404040; }
+        .chip:hover { border-color: #4b5563; color: #9ca3af; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
         .chip.active {
-            background: #fff;
-            color: #0a0a0a;
-            border-color: #fff;
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: #fff;
+            border-color: transparent;
             font-weight: 600;
-            box-shadow: 0 2px 12px rgba(255,255,255,0.1);
+            box-shadow: 0 4px 16px rgba(99,102,241,0.35), 0 1px 3px rgba(0,0,0,0.2);
         }
-        .chip .chip-count { opacity: 0.5; margin-left: 4px; font-size: 0.75rem; }
+        .chip .chip-count { opacity: 0.6; margin-left: 4px; font-size: 0.72rem; }
 
         /* Message template */
         .msg-area { display: flex; gap: 12px; flex-wrap: wrap; }
         .msg-area textarea {
             flex: 1; min-width: 280px; min-height: 110px;
-            background: #1a1a1a; color: #d4d4d4;
-            border: 1px solid #262626; border-radius: 10px;
+            background: #15171e; color: #c8cdd5;
+            border: 1px solid #2d3140; border-radius: 10px;
             padding: 14px; font-family: inherit; font-size: 0.9rem; resize: vertical;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
         }
-        .msg-area textarea:focus { outline: none; border-color: #404040; }
+        .msg-area textarea:focus { outline: none; border-color: #6366f1; box-shadow: inset 0 2px 6px rgba(0,0,0,0.15), 0 0 0 2px rgba(99,102,241,0.15); }
         .variables-panel {
             min-width: 200px; max-height: 240px; overflow-y: auto;
-            background: #1a1a1a; border-radius: 10px; padding: 10px; border: 1px solid #262626;
+            background: #15171e; border-radius: 10px; padding: 12px; border: 1px solid #2d3140;
         }
-        .variables-panel p { font-size: 0.75rem; color: #404040; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .variables-panel p { font-size: 0.72rem; color: #4b5563; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
         .var-btn {
-            display: inline-block; background: #262626; color: #737373;
-            border: none; padding: 4px 10px; border-radius: 6px; margin: 2px;
+            display: inline-block; background: #1e2028; color: #9ca3af;
+            border: 1px solid #2d3140; padding: 4px 10px; border-radius: 6px; margin: 2px;
             cursor: pointer; font-size: 0.78rem; transition: all 0.15s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .var-btn:hover { background: #333; color: #fff; }
-        .var-btn.money { border-left: 2px solid #4ade80; }
+        .var-btn:hover { background: #2d3140; color: #fff; border-color: #4b5563; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .var-btn.money { border-left: 3px solid #4ade80; }
 
         .msg-preview {
-            margin-top: 10px; padding: 14px; background: #1a1a1a;
-            border-radius: 10px; border: 1px solid #262626;
-            font-size: 0.85rem; color: #525252; white-space: pre-wrap;
+            margin-top: 12px; padding: 16px; background: #15171e;
+            border-radius: 10px; border: 1px solid #2d3140;
+            font-size: 0.85rem; color: #6b7280; white-space: pre-wrap;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
         }
-        .msg-preview strong { color: #fff; }
-        .hint { font-size: 0.8rem; color: #404040; margin-bottom: 10px; }
-        .hint code { color: #737373; background: #1a1a1a; padding: 1px 5px; border-radius: 4px; }
+        .msg-preview strong { color: #a5b4fc; }
+        .hint { font-size: 0.82rem; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
+        .hint strong { color: #9ca3af; }
+        .hint code { color: #a5b4fc; background: #1e2028; padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; }
 
         /* Stats */
-        .stats { font-size: 0.82rem; color: #404040; padding: 6px 0; }
-        .stats span { color: #fff; font-weight: 600; }
+        .stats { font-size: 0.85rem; color: #6b7280; padding: 6px 0; }
+        .stats span { color: #a5b4fc; font-weight: 700; }
 
         /* Buttons */
         .btn {
-            padding: 12px 28px; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+            padding: 13px 32px; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer; font-size: 0.92rem; transition: all 0.25s;
         }
         .btn-export {
-            background: #fff; color: #0a0a0a;
-            box-shadow: 0 2px 16px rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.35), 0 2px 6px rgba(0,0,0,0.2);
         }
-        .btn-export:hover { box-shadow: 0 4px 24px rgba(255,255,255,0.2); transform: translateY(-1px); }
+        .btn-export:hover { box-shadow: 0 6px 28px rgba(99,102,241,0.5), 0 2px 8px rgba(0,0,0,0.3); transform: translateY(-2px); }
+        .btn-export:active { transform: translateY(0); }
 
         /* Toast */
         .toast {
             position: fixed; bottom: 24px; right: 24px;
-            background: #fff; color: #0a0a0a;
-            padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: #fff;
+            padding: 14px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
             transform: translateY(80px); opacity: 0;
             transition: all 0.3s; z-index: 100;
-            box-shadow: 0 4px 24px rgba(255,255,255,0.15);
+            box-shadow: 0 8px 32px rgba(99,102,241,0.4);
         }
         .toast.show { transform: translateY(0); opacity: 1; }
     </style>
@@ -187,11 +219,12 @@
         <div class="header">
             <h1>Creador de Mensajes</h1>
             <div class="brand">MAVERIX</div>
+            <div class="line"></div>
         </div>
 
         <!-- STEP 1: Upload -->
         <div class="step" id="step1">
-            <h2>1. Archivo CSV</h2>
+            <h2><span class="step-num">1</span>Subi tu archivo CSV</h2>
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">&#128194;</div>
                 <p>Arrastra el archivo <strong>Informe de Cuentas.csv</strong> aca o hace clic</p>
@@ -212,13 +245,13 @@
 
         <!-- STEP 2: Phone columns -->
         <div class="step disabled" id="step2">
-            <h2>2. Columnas de telefono</h2>
+            <h2><span class="step-num">2</span>Selecciona las columnas de telefono</h2>
             <div class="chip-group" id="phoneCols"></div>
         </div>
 
         <!-- STEP 3: Message template -->
         <div class="step disabled" id="step3">
-            <h2>3. Mensaje personalizado</h2>
+            <h2><span class="step-num">3</span>Escribi tu mensaje personalizado</h2>
             <p class="hint">
                 Usa <code>{NombreColumna}</code> para insertar datos. <code>{$ Asig.}</code> y <code>{$ Hist.}</code> se formatean como pesos.
             </p>
@@ -233,14 +266,14 @@
 
         <!-- STEP 4: Extra columns -->
         <div class="step disabled" id="step4">
-            <h2>4. Columnas adicionales en el Excel</h2>
+            <h2><span class="step-num">4</span>Columnas adicionales en el Excel</h2>
             <p class="hint">El Excel siempre tiene <strong>Telefono</strong> y <strong>Mensaje</strong>. Selecciona columnas extra.</p>
             <div class="chip-group" id="extraColsChips"></div>
         </div>
 
         <!-- STEP 5: Export -->
         <div class="step disabled" id="step5">
-            <h2>5. Exportar</h2>
+            <h2><span class="step-num">5</span>Descarga tu archivo</h2>
             <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
                 <button class="btn btn-export" id="btnExportCSV">Descargar CSV</button>
                 <div class="stats" id="exportStats"></div>
