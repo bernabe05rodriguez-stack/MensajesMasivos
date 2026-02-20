@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensajes Masivos - Generador de contactos</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            padding: 20px 0;
+            color: #38bdf8;
+        }
+        h2 {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 6px;
+        }
+        .step {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid #334155;
+        }
+        .step.disabled { opacity: 0.4; pointer-events: none; }
+
+        /* Upload */
+        .upload-area {
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #38bdf8;
+            background: #1e293b;
+        }
+        .upload-area input { display: none; }
+        .upload-area p { color: #94a3b8; }
+        .upload-area .icon { font-size: 2rem; margin-bottom: 8px; }
+        .file-info {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 6px;
+            color: #4ade80;
+            display: none;
+        }
+
+        /* Phone columns */
+        .phone-cols {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .phone-cols label {
+            background: #0f172a;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #334155;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        .phone-cols label:hover { border-color: #38bdf8; }
+        .phone-cols input:checked + span { color: #38bdf8; font-weight: 600; }
+
+        /* Message template */
+        .msg-area {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .msg-area textarea {
+            flex: 1;
+            min-width: 300px;
+            min-height: 120px;
+            background: #0f172a;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+        .msg-area textarea:focus { outline: none; border-color: #38bdf8; }
+        .variables-panel {
+            min-width: 220px;
+            max-height: 260px;
+            overflow-y: auto;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #334155;
+        }
+        .variables-panel p { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
+        .var-btn {
+            display: inline-block;
+            background: #334155;
+            color: #cbd5e1;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.15s;
+        }
+        .var-btn:hover { background: #475569; color: #38bdf8; }
+
+        /* Preview */
+        .msg-preview {
+            margin-top: 10px;
+            padding: 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            white-space: pre-wrap;
+        }
+        .msg-preview strong { color: #38bdf8; }
+
+        /* Table */
+        .table-wrapper {
+            max-height: 500px;
+            overflow: auto;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        thead { position: sticky; top: 0; z-index: 2; }
+        th {
+            background: #334155;
+            padding: 10px 8px;
+            text-align: left;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #1e293b;
+        }
+        tr:hover td { background: #1e293b; }
+        tr.excluded td { opacity: 0.35; text-decoration: line-through; }
+        .cb-cell { width: 40px; text-align: center; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .controls input[type="text"] {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .controls input[type="text"]:focus { outline: none; border-color: #38bdf8; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #38bdf8; color: #0f172a; }
+        .btn-primary:hover { background: #7dd3fc; }
+        .btn-secondary { background: #334155; color: #e2e8f0; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-success { background: #4ade80; color: #0f172a; }
+        .btn-success:hover { background: #86efac; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+        .stats {
+            font-size: 0.85rem;
+            color: #64748b;
+            padding: 8px 0;
+        }
+        .stats span { color: #38bdf8; font-weight: 600; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4ade80;
+            color: #0f172a;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mensajes Masivos</h1>
+
+        <!-- STEP 1: Upload -->
+        <div class="step" id="step1">
+            <h2>1. Subir archivo CSV</h2>
+            <div class="upload-area" id="uploadArea">
+                <div class="icon">📂</div>
+                <p>Arrastrá el archivo <strong>Informe de Cuentas.csv</strong> acá o hacé clic para seleccionarlo</p>
+                <input type="file" id="fileInput" accept=".csv,.txt">
+            </div>
+            <div class="file-info" id="fileInfo"></div>
+        </div>
+
+        <!-- STEP 2: Phone columns -->
+        <div class="step disabled" id="step2">
+            <h2>2. Columnas de teléfono a incluir</h2>
+            <div class="phone-cols" id="phoneCols"></div>
+        </div>
+
+        <!-- STEP 3: Message template -->
+        <div class="step disabled" id="step3">
+            <h2>3. Mensaje personalizado</h2>
+            <p style="font-size:0.85rem;color:#64748b;margin-bottom:10px;">
+                Usá <code style="color:#38bdf8">{NombreColumna}</code> para insertar datos del contacto. Ej: <code style="color:#38bdf8">{Razon Social}</code>
+            </p>
+            <div class="msg-area">
+                <textarea id="msgTemplate" placeholder="Hola {Razon Social}, te contactamos por tu cuenta {Cuenta}. Tu saldo es de ${$ Asig.}. Contactanos para regularizar tu situación."></textarea>
+                <div class="variables-panel" id="varsPanel">
+                    <p>Click para insertar variable:</p>
+                </div>
+            </div>
+            <div class="msg-preview" id="msgPreview">Vista previa del mensaje...</div>
+        </div>
+
+        <!-- STEP 4: Contacts table -->
+        <div class="step disabled" id="step4">
+            <h2>4. Contactos y teléfonos</h2>
+            <div class="controls">
+                <input type="text" id="searchBox" placeholder="Buscar por nombre, cuenta o teléfono...">
+                <button class="btn btn-sm btn-secondary" id="btnSelectAll">Seleccionar todos</button>
+                <button class="btn btn-sm btn-secondary" id="btnDeselectAll">Deseleccionar todos</button>
+            </div>
+            <div class="stats" id="stats"></div>
+            <div class="table-wrapper" id="tableWrapper">
+                <table>
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- STEP 5: Export -->
+        <div class="step disabled" id="step5">
+            <h2>5. Exportar</h2>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-success" id="btnExportCSV">Descargar CSV</button>
+                <div class="stats" id="exportStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (function() {
+        // State
+        let rawData = [];
+        let headers = [];
+        let phoneCols = ['Telefono_1','Telefono_2','Telefono_3','Telefono_4','Telefono_5','Telefono_6','Telefono_7','Telefono_8','Telefono_9'];
+        let selectedPhoneCols = new Set(phoneCols);
+        let contactRows = []; // {row: original row data, phones: [{col, number}], selected: true, id}
+        let searchTerm = '';
+
+        // Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const phoneColsEl = document.getElementById('phoneCols');
+        const msgTemplate = document.getElementById('msgTemplate');
+        const varsPanel = document.getElementById('varsPanel');
+        const msgPreview = document.getElementById('msgPreview');
+        const tableHead = document.getElementById('tableHead');
+        const tableBody = document.getElementById('tableBody');
+        const searchBox = document.getElementById('searchBox');
+        const stats = document.getElementById('stats');
+        const exportStats = document.getElementById('exportStats');
+
+        // Upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const text = e.target.result;
+                parseCSV(text);
+                fileInfo.style.display = 'block';
+                fileInfo.textContent = `${file.name} — ${rawData.length} registros cargados`;
+                enableSteps();
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCSV(text) {
+            const lines = text.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim());
+            if (lines.length < 2) return;
+            headers = lines[0].split(';').map(h => h.trim());
+            rawData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(';');
+                const row = {};
+                headers.forEach((h, idx) => { row[h] = (values[idx] || '').trim(); });
+                rawData.push(row);
+            }
+        }
+
+        function enableSteps() {
+            document.getElementById('step2').classList.remove('disabled');
+            document.getElementById('step3').classList.remove('disabled');
+            document.getElementById('step4').classList.remove('disabled');
+            document.getElementById('step5').classList.remove('disabled');
+            renderPhoneCols();
+            renderVariables();
+            buildContactRows();
+            renderTable();
+            updatePreview();
+        }
+
+        // Phone column checkboxes
+        function renderPhoneCols() {
+            phoneColsEl.innerHTML = '';
+            phoneCols.forEach(col => {
+                if (!headers.includes(col)) return;
+                // Count non-empty values
+                const count = rawData.filter(r => r[col] && r[col].trim()).length;
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" checked data-col="${col}"><span>${col} (${count})</span>`;
+                label.querySelector('input').addEventListener('change', function() {
+                    if (this.checked) selectedPhoneCols.add(col);
+                    else selectedPhoneCols.delete(col);
+                    buildContactRows();
+                    renderTable();
+                });
+                phoneColsEl.appendChild(label);
+            });
+        }
+
+        // Variables panel
+        function renderVariables() {
+            const frag = document.createDocumentFragment();
+            const p = document.createElement('p');
+            p.textContent = 'Click para insertar variable:';
+            frag.appendChild(p);
+            headers.forEach(h => {
+                if (phoneCols.includes(h)) return; // skip phone cols from variables
+                const btn = document.createElement('button');
+                btn.className = 'var-btn';
+                btn.textContent = `{${h}}`;
+                btn.addEventListener('click', () => {
+                    const ta = msgTemplate;
+                    const start = ta.selectionStart;
+                    const end = ta.selectionEnd;
+                    const text = ta.value;
+                    ta.value = text.substring(0, start) + `{${h}}` + text.substring(end);
+                    ta.focus();
+                    ta.selectionStart = ta.selectionEnd = start + h.length + 2;
+                    updatePreview();
+                });
+                frag.appendChild(btn);
+            });
+            varsPanel.innerHTML = '';
+            varsPanel.appendChild(frag);
+        }
+
+        // Message preview
+        msgTemplate.addEventListener('input', updatePreview);
+        function updatePreview() {
+            if (!rawData.length) return;
+            const row = rawData[0];
+            let msg = msgTemplate.value || msgTemplate.placeholder;
+            msg = msg.replace(/\{([^}]+)\}/g, (m, key) => {
+                return row[key] !== undefined ? `<strong>${row[key]}</strong>` : m;
+            });
+            msgPreview.innerHTML = msg || 'Vista previa del mensaje...';
+        }
+
+        // Build contact rows (flatten phones)
+        function buildContactRows() {
+            contactRows = [];
+            let id = 0;
+            rawData.forEach((row, rowIdx) => {
+                const phones = [];
+                selectedPhoneCols.forEach(col => {
+                    const val = row[col];
+                    if (!val || !val.trim()) return;
+                    // Telefono_1 can have multiple numbers separated by -
+                    if (col === 'Telefono_1' && val.includes('-')) {
+                        val.split('-').forEach(num => {
+                            const clean = num.trim();
+                            if (clean) phones.push({ col, number: clean });
+                        });
+                    } else {
+                        phones.push({ col, number: val.trim() });
+                    }
+                });
+                if (phones.length === 0) return;
+                phones.forEach(p => {
+                    contactRows.push({
+                        id: id++,
+                        rowIdx,
+                        row,
+                        col: p.col,
+                        number: p.number,
+                        selected: true
+                    });
+                });
+            });
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = contactRows.length;
+            const selected = contactRows.filter(c => c.selected).length;
+            stats.innerHTML = `Total: <span>${total}</span> teléfonos | Seleccionados: <span>${selected}</span>`;
+            exportStats.innerHTML = `Se exportarán <span>${selected}</span> filas`;
+        }
+
+        // Search
+        searchBox.addEventListener('input', function() {
+            searchTerm = this.value.toLowerCase();
+            renderTable();
+        });
+
+        // Select/Deselect all
+        document.getElementById('btnSelectAll').addEventListener('click', () => {
+            contactRows.forEach(c => c.selected = true);
+            renderTable();
+            updateStats();
+        });
+        document.getElementById('btnDeselectAll').addEventListener('click', () => {
+            contactRows.forEach(c => c.selected = false);
+            renderTable();
+            updateStats();
+        });
+
+        // Table rendering (virtualized for performance)
+        function renderTable() {
+            tableHead.innerHTML = `<tr>
+                <th class="cb-cell"><input type="checkbox" id="checkAll" checked></th>
+                <th>Razón Social</th>
+                <th>Cuenta</th>
+                <th>Teléfono</th>
+                <th>Columna</th>
+                <th>Mensaje</th>
+            </tr>`;
+
+            document.getElementById('checkAll').addEventListener('change', function() {
+                const filtered = getFilteredRows();
+                filtered.forEach(c => c.selected = this.checked);
+                renderTable();
+                updateStats();
+            });
+
+            const filtered = getFilteredRows();
+            const frag = document.createDocumentFragment();
+            // Limit display for performance
+            const displayLimit = 500;
+            const toShow = filtered.slice(0, displayLimit);
+
+            toShow.forEach(c => {
+                const tr = document.createElement('tr');
+                if (!c.selected) tr.classList.add('excluded');
+                const msg = buildMessage(c.row);
+                const shortMsg = msg.length > 80 ? msg.substring(0, 80) + '...' : msg;
+                tr.innerHTML = `
+                    <td class="cb-cell"><input type="checkbox" ${c.selected ? 'checked' : ''} data-id="${c.id}"></td>
+                    <td>${esc(c.row['Razon Social'] || '')}</td>
+                    <td>${esc(c.row['Cuenta'] || '')}</td>
+                    <td><strong>${esc(c.number)}</strong></td>
+                    <td>${esc(c.col)}</td>
+                    <td title="${esc(msg)}">${esc(shortMsg)}</td>
+                `;
+                tr.querySelector('input').addEventListener('change', function() {
+                    c.selected = this.checked;
+                    if (c.selected) tr.classList.remove('excluded');
+                    else tr.classList.add('excluded');
+                    updateStats();
+                });
+                frag.appendChild(tr);
+            });
+
+            tableBody.innerHTML = '';
+            tableBody.appendChild(frag);
+
+            if (filtered.length > displayLimit) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="6" style="text-align:center;color:#64748b;padding:12px;">
+                    Mostrando ${displayLimit} de ${filtered.length} resultados. Usá el buscador para filtrar.
+                </td>`;
+                tableBody.appendChild(tr);
+            }
+
+            updateStats();
+        }
+
+        function getFilteredRows() {
+            if (!searchTerm) return contactRows;
+            return contactRows.filter(c => {
+                const name = (c.row['Razon Social'] || '').toLowerCase();
+                const cuenta = (c.row['Cuenta'] || '').toLowerCase();
+                const phone = c.number.toLowerCase();
+                return name.includes(searchTerm) || cuenta.includes(searchTerm) || phone.includes(searchTerm);
+            });
+        }
+
+        function buildMessage(row) {
+            let tpl = msgTemplate.value || msgTemplate.placeholder;
+            return tpl.replace(/\{([^}]+)\}/g, (m, key) => {
+                return row[key] !== undefined ? row[key] : m;
+            });
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+
+        // Export CSV
+        document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
+
+        function exportCSV() {
+            const selected = contactRows.filter(c => c.selected);
+            if (!selected.length) {
+                showToast('No hay contactos seleccionados');
+                return;
+            }
+            const sep = ';';
+            const lines = ['Telefono' + sep + 'Mensaje' + sep + 'Razon Social' + sep + 'Cuenta'];
+            selected.forEach(c => {
+                const msg = buildMessage(c.row);
+                lines.push(
+                    csvField(c.number) + sep +
+                    csvField(msg) + sep +
+                    csvField(c.row['Razon Social'] || '') + sep +
+                    csvField(c.row['Cuenta'] || '')
+                );
+            });
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'contactos_mensajes.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`CSV descargado con ${selected.length} contactos`);
+        }
+
+        function csvField(val) {
+            if (val.includes(';') || val.includes('"') || val.includes('\n')) {
+                return '"' + val.replace(/"/g, '""') + '"';
+            }
+            return val;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+    })();
+    </script>
+</body>
+</html>
