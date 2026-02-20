@@ -42,30 +42,70 @@
             padding: 40px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
         }
         .upload-area:hover, .upload-area.dragover {
             border-color: #38bdf8;
-            background: #1e293b;
+            background: rgba(56,189,248,0.05);
         }
+        .upload-area.hidden { display: none; }
         .upload-area input { display: none; }
         .upload-area p { color: #94a3b8; }
-        .upload-area .icon { font-size: 2rem; margin-bottom: 8px; }
-        .file-info {
-            margin-top: 10px;
-            padding: 8px 12px;
-            background: #0f172a;
-            border-radius: 6px;
-            color: #4ade80;
+        .upload-icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+        .file-loaded {
             display: none;
+            padding: 16px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+        .file-loaded.show { display: flex; align-items: center; gap: 12px; }
+        .file-loaded .file-name {
+            flex: 1;
+            color: #4ade80;
+            font-weight: 600;
+        }
+        .file-loaded .file-stats { color: #64748b; font-size: 0.85rem; }
+        .btn-remove {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-remove:hover { background: #dc2626; }
+
+        /* Loading spinner */
+        .loading-overlay {
+            display: none;
+            padding: 40px;
+            text-align: center;
+        }
+        .loading-overlay.show { display: block; }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid #334155;
+            border-top-color: #38bdf8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+        .loading-overlay p { color: #94a3b8; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Phone columns */
-        .phone-cols {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+        .phone-cols { display: flex; flex-wrap: wrap; gap: 8px; }
         .phone-cols label {
             background: #0f172a;
             padding: 8px 14px;
@@ -82,146 +122,80 @@
         .phone-cols input:checked + span { color: #38bdf8; font-weight: 600; }
 
         /* Message template */
-        .msg-area {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
+        .msg-area { display: flex; gap: 12px; flex-wrap: wrap; }
         .msg-area textarea {
-            flex: 1;
-            min-width: 300px;
-            min-height: 120px;
-            background: #0f172a;
-            color: #e2e8f0;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 12px;
-            font-family: inherit;
-            font-size: 0.95rem;
-            resize: vertical;
+            flex: 1; min-width: 300px; min-height: 120px;
+            background: #0f172a; color: #e2e8f0;
+            border: 1px solid #334155; border-radius: 8px;
+            padding: 12px; font-family: inherit; font-size: 0.95rem; resize: vertical;
         }
         .msg-area textarea:focus { outline: none; border-color: #38bdf8; }
         .variables-panel {
-            min-width: 220px;
-            max-height: 260px;
-            overflow-y: auto;
-            background: #0f172a;
-            border-radius: 8px;
-            padding: 10px;
-            border: 1px solid #334155;
+            min-width: 220px; max-height: 260px; overflow-y: auto;
+            background: #0f172a; border-radius: 8px; padding: 10px; border: 1px solid #334155;
         }
         .variables-panel p { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
         .var-btn {
-            display: inline-block;
-            background: #334155;
-            color: #cbd5e1;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            margin: 2px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background 0.15s;
+            display: inline-block; background: #334155; color: #cbd5e1;
+            border: none; padding: 4px 10px; border-radius: 4px; margin: 2px;
+            cursor: pointer; font-size: 0.8rem; transition: background 0.15s;
         }
         .var-btn:hover { background: #475569; color: #38bdf8; }
+        .var-btn.money { border-left: 3px solid #4ade80; }
 
         /* Preview */
         .msg-preview {
-            margin-top: 10px;
-            padding: 12px;
-            background: #0f172a;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            font-size: 0.9rem;
-            color: #94a3b8;
-            white-space: pre-wrap;
+            margin-top: 10px; padding: 12px; background: #0f172a;
+            border-radius: 8px; border: 1px solid #334155;
+            font-size: 0.9rem; color: #94a3b8; white-space: pre-wrap;
         }
         .msg-preview strong { color: #38bdf8; }
 
-        /* Table */
-        .table-wrapper {
-            max-height: 500px;
-            overflow: auto;
-            border-radius: 8px;
-            border: 1px solid #334155;
+        /* Column selector (step 4) */
+        .col-selector { display: flex; gap: 16px; flex-wrap: wrap; }
+        .col-list-available, .col-list-selected {
+            flex: 1; min-width: 250px;
+            background: #0f172a; border-radius: 8px; padding: 12px; border: 1px solid #334155;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
+        .col-list-available h3, .col-list-selected h3 {
+            font-size: 0.9rem; color: #64748b; margin-bottom: 8px;
         }
-        thead { position: sticky; top: 0; z-index: 2; }
-        th {
-            background: #334155;
-            padding: 10px 8px;
-            text-align: left;
-            color: #94a3b8;
-            font-weight: 600;
+        .col-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 10px; margin: 4px 0; border-radius: 6px;
+            background: #1e293b; cursor: pointer; transition: all 0.15s;
+            font-size: 0.85rem; border: 1px solid transparent;
         }
-        td {
-            padding: 8px;
-            border-bottom: 1px solid #1e293b;
+        .col-item:hover { border-color: #38bdf8; }
+        .col-item .drag-handle { color: #475569; cursor: grab; }
+        .col-item .col-name { flex: 1; }
+        .col-item .col-action {
+            background: none; border: none; color: #38bdf8; cursor: pointer;
+            font-size: 1.1rem; padding: 0 4px; font-weight: bold;
         }
-        tr:hover td { background: #1e293b; }
-        tr.excluded td { opacity: 0.35; text-decoration: line-through; }
-        .cb-cell { width: 40px; text-align: center; }
+        .col-item .col-action.remove { color: #ef4444; }
+        .col-item.dragging { opacity: 0.5; border: 1px dashed #38bdf8; }
+        .col-item.drag-over { border-top: 2px solid #38bdf8; }
 
-        /* Controls */
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .controls input[type="text"] {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #e2e8f0;
-            padding: 8px 12px;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 200px;
-        }
-        .controls input[type="text"]:focus { outline: none; border-color: #38bdf8; }
+        /* Stats */
+        .stats { font-size: 0.85rem; color: #64748b; padding: 8px 0; }
+        .stats span { color: #38bdf8; font-weight: 600; }
+
+        /* Buttons */
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            padding: 10px 20px; border: none; border-radius: 8px;
+            font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;
         }
-        .btn-primary { background: #38bdf8; color: #0f172a; }
-        .btn-primary:hover { background: #7dd3fc; }
-        .btn-secondary { background: #334155; color: #e2e8f0; }
-        .btn-secondary:hover { background: #475569; }
         .btn-success { background: #4ade80; color: #0f172a; }
         .btn-success:hover { background: #86efac; }
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-
-        .stats {
-            font-size: 0.85rem;
-            color: #64748b;
-            padding: 8px 0;
-        }
-        .stats span { color: #38bdf8; font-weight: 600; }
 
         /* Toast */
         .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #4ade80;
-            color: #0f172a;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 100;
+            position: fixed; bottom: 20px; right: 20px;
+            background: #4ade80; color: #0f172a;
+            padding: 12px 20px; border-radius: 8px; font-weight: 600;
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.3s; z-index: 100;
         }
         .toast.show { transform: translateY(0); opacity: 1; }
     </style>
@@ -234,16 +208,26 @@
         <div class="step" id="step1">
             <h2>1. Subir archivo CSV</h2>
             <div class="upload-area" id="uploadArea">
-                <div class="icon">📂</div>
-                <p>Arrastrá el archivo <strong>Informe de Cuentas.csv</strong> acá o hacé clic para seleccionarlo</p>
+                <div class="upload-icon">&#128194;</div>
+                <p>Arrastra el archivo <strong>Informe de Cuentas.csv</strong> aca o hace clic para seleccionarlo</p>
                 <input type="file" id="fileInput" accept=".csv,.txt">
             </div>
-            <div class="file-info" id="fileInfo"></div>
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p>Procesando archivo...</p>
+            </div>
+            <div class="file-loaded" id="fileLoaded">
+                <div>
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-stats" id="fileStats"></div>
+                </div>
+                <button class="btn-remove" id="btnRemoveFile">Quitar y cargar otro</button>
+            </div>
         </div>
 
         <!-- STEP 2: Phone columns -->
         <div class="step disabled" id="step2">
-            <h2>2. Columnas de teléfono a incluir</h2>
+            <h2>2. Columnas de telefono a incluir</h2>
             <div class="phone-cols" id="phoneCols"></div>
         </div>
 
@@ -251,10 +235,10 @@
         <div class="step disabled" id="step3">
             <h2>3. Mensaje personalizado</h2>
             <p style="font-size:0.85rem;color:#64748b;margin-bottom:10px;">
-                Usá <code style="color:#38bdf8">{NombreColumna}</code> para insertar datos del contacto. Ej: <code style="color:#38bdf8">{Razon Social}</code>
+                Usa <code style="color:#38bdf8">{NombreColumna}</code> para insertar datos. Las variables de dinero <code style="color:#4ade80">{$ Asig.}</code> y <code style="color:#4ade80">{$ Hist.}</code> se formatean como pesos automaticamente.
             </p>
             <div class="msg-area">
-                <textarea id="msgTemplate" placeholder="Hola {Razon Social}, te contactamos por tu cuenta {Cuenta}. Tu saldo es de ${$ Asig.}. Contactanos para regularizar tu situación."></textarea>
+                <textarea id="msgTemplate" placeholder="Hola {Razon Social}, te contactamos por tu cuenta {Cuenta}. Tu saldo es de {$ Asig.}. Contactanos para regularizar tu situacion."></textarea>
                 <div class="variables-panel" id="varsPanel">
                     <p>Click para insertar variable:</p>
                 </div>
@@ -262,20 +246,21 @@
             <div class="msg-preview" id="msgPreview">Vista previa del mensaje...</div>
         </div>
 
-        <!-- STEP 4: Contacts table -->
+        <!-- STEP 4: Column order for export -->
         <div class="step disabled" id="step4">
-            <h2>4. Contactos y teléfonos</h2>
-            <div class="controls">
-                <input type="text" id="searchBox" placeholder="Buscar por nombre, cuenta o teléfono...">
-                <button class="btn btn-sm btn-secondary" id="btnSelectAll">Seleccionar todos</button>
-                <button class="btn btn-sm btn-secondary" id="btnDeselectAll">Deseleccionar todos</button>
-            </div>
-            <div class="stats" id="stats"></div>
-            <div class="table-wrapper" id="tableWrapper">
-                <table>
-                    <thead id="tableHead"></thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+            <h2>4. Columnas adicionales en el Excel (arrastra para ordenar)</h2>
+            <p style="font-size:0.85rem;color:#64748b;margin-bottom:10px;">
+                El Excel siempre tendra: <strong>Telefono</strong> y <strong>Mensaje</strong>. Agrega columnas extra y ordenalas.
+            </p>
+            <div class="col-selector">
+                <div class="col-list-available">
+                    <h3>Columnas disponibles</h3>
+                    <div id="colsAvailable"></div>
+                </div>
+                <div class="col-list-selected">
+                    <h3>Columnas en el Excel (arrastra para reordenar)</h3>
+                    <div id="colsSelected"></div>
+                </div>
             </div>
         </div>
 
@@ -296,26 +281,81 @@
         // State
         let rawData = [];
         let headers = [];
-        let phoneCols = ['Telefono_1','Telefono_2','Telefono_3','Telefono_4','Telefono_5','Telefono_6','Telefono_7','Telefono_8','Telefono_9'];
-        let selectedPhoneCols = new Set(phoneCols);
-        let contactRows = []; // {row: original row data, phones: [{col, number}], selected: true, id}
-        let searchTerm = '';
+        const phoneColNames = ['Telefono_1','Telefono_2','Telefono_3','Telefono_4','Telefono_5','Telefono_6','Telefono_7','Telefono_8','Telefono_9'];
+        let selectedPhoneCols = new Set(phoneColNames);
+        let contactRows = [];
+        let extraCols = []; // columns user added to export
+        const moneyCols = ['$ Asig.', '$ Hist.'];
 
         // Elements
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const fileLoaded = document.getElementById('fileLoaded');
+        const fileName = document.getElementById('fileName');
+        const fileStats = document.getElementById('fileStats');
         const phoneColsEl = document.getElementById('phoneCols');
         const msgTemplate = document.getElementById('msgTemplate');
         const varsPanel = document.getElementById('varsPanel');
         const msgPreview = document.getElementById('msgPreview');
-        const tableHead = document.getElementById('tableHead');
-        const tableBody = document.getElementById('tableBody');
-        const searchBox = document.getElementById('searchBox');
-        const stats = document.getElementById('stats');
         const exportStats = document.getElementById('exportStats');
+        const colsAvailable = document.getElementById('colsAvailable');
+        const colsSelected = document.getElementById('colsSelected');
 
-        // Upload handlers
+        // ========== CSV PARSING (handles quoted fields) ==========
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (inQuotes) {
+                    if (ch === '"') {
+                        if (i + 1 < line.length && line[i + 1] === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuotes = false;
+                        }
+                    } else {
+                        current += ch;
+                    }
+                } else {
+                    if (ch === '"') {
+                        inQuotes = true;
+                    } else if (ch === ';') {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += ch;
+                    }
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        function parseCSV(text) {
+            const lines = text.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim());
+            if (lines.length < 2) return;
+            headers = parseCSVLine(lines[0]);
+            rawData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
+                rawData.push(row);
+            }
+        }
+
+        // ========== MONEY FORMAT ==========
+        function formatPeso(val) {
+            const num = parseFloat(val);
+            if (isNaN(num)) return val;
+            return '$' + num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // ========== UPLOAD ==========
         uploadArea.addEventListener('click', () => fileInput.click());
         uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
         uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
@@ -326,29 +366,63 @@
         });
         fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
 
+        document.getElementById('btnRemoveFile').addEventListener('click', resetFile);
+
         function handleFile(file) {
+            // Show loading
+            uploadArea.classList.add('hidden');
+            loadingOverlay.classList.add('show');
+
             const reader = new FileReader();
             reader.onload = e => {
                 const text = e.target.result;
                 parseCSV(text);
-                fileInfo.style.display = 'block';
-                fileInfo.textContent = `${file.name} — ${rawData.length} registros cargados`;
-                enableSteps();
+
+                // Count total phones
+                let totalPhones = 0;
+                rawData.forEach(row => {
+                    phoneColNames.forEach(col => {
+                        const val = row[col];
+                        if (!val) return;
+                        if (col === 'Telefono_1' && val.includes('-')) {
+                            totalPhones += val.split('-').filter(n => n.trim()).length;
+                        } else {
+                            totalPhones++;
+                        }
+                    });
+                });
+
+                // Simulate slight delay for animation feel
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('show');
+                    fileLoaded.classList.add('show');
+                    fileName.textContent = file.name;
+                    fileStats.textContent = `${rawData.length} registros | ${totalPhones} telefonos encontrados`;
+                    enableSteps();
+                }, 400);
             };
             reader.readAsText(file, 'UTF-8');
         }
 
-        function parseCSV(text) {
-            const lines = text.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim());
-            if (lines.length < 2) return;
-            headers = lines[0].split(';').map(h => h.trim());
+        function resetFile() {
             rawData = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(';');
-                const row = {};
-                headers.forEach((h, idx) => { row[h] = (values[idx] || '').trim(); });
-                rawData.push(row);
-            }
+            headers = [];
+            extraCols = [];
+            selectedPhoneCols = new Set(phoneColNames);
+            contactRows = [];
+            fileLoaded.classList.remove('show');
+            uploadArea.classList.remove('hidden');
+            fileInput.value = '';
+            document.getElementById('step2').classList.add('disabled');
+            document.getElementById('step3').classList.add('disabled');
+            document.getElementById('step4').classList.add('disabled');
+            document.getElementById('step5').classList.add('disabled');
+            phoneColsEl.innerHTML = '';
+            varsPanel.innerHTML = '<p>Click para insertar variable:</p>';
+            msgPreview.textContent = 'Vista previa del mensaje...';
+            colsAvailable.innerHTML = '';
+            colsSelected.innerHTML = '';
+            exportStats.innerHTML = '';
         }
 
         function enableSteps() {
@@ -359,48 +433,61 @@
             renderPhoneCols();
             renderVariables();
             buildContactRows();
-            renderTable();
+            renderColumnSelector();
             updatePreview();
         }
 
-        // Phone column checkboxes
+        // ========== PHONE COLUMN CHECKBOXES ==========
         function renderPhoneCols() {
             phoneColsEl.innerHTML = '';
-            phoneCols.forEach(col => {
+            phoneColNames.forEach(col => {
                 if (!headers.includes(col)) return;
-                // Count non-empty values
-                const count = rawData.filter(r => r[col] && r[col].trim()).length;
+                let count = 0;
+                rawData.forEach(r => {
+                    const val = r[col];
+                    if (!val) return;
+                    if (col === 'Telefono_1' && val.includes('-')) {
+                        count += val.split('-').filter(n => n.trim()).length;
+                    } else {
+                        count++;
+                    }
+                });
                 const label = document.createElement('label');
-                label.innerHTML = `<input type="checkbox" checked data-col="${col}"><span>${col} (${count})</span>`;
+                label.innerHTML = `<input type="checkbox" ${count > 0 ? 'checked' : ''} data-col="${col}"><span>${col} (${count})</span>`;
+                if (count === 0) {
+                    selectedPhoneCols.delete(col);
+                    label.style.opacity = '0.4';
+                }
                 label.querySelector('input').addEventListener('change', function() {
                     if (this.checked) selectedPhoneCols.add(col);
                     else selectedPhoneCols.delete(col);
                     buildContactRows();
-                    renderTable();
                 });
                 phoneColsEl.appendChild(label);
             });
         }
 
-        // Variables panel
+        // ========== VARIABLES PANEL ==========
         function renderVariables() {
             const frag = document.createDocumentFragment();
             const p = document.createElement('p');
             p.textContent = 'Click para insertar variable:';
             frag.appendChild(p);
             headers.forEach(h => {
-                if (phoneCols.includes(h)) return; // skip phone cols from variables
+                if (phoneColNames.includes(h)) return;
                 const btn = document.createElement('button');
-                btn.className = 'var-btn';
+                btn.className = 'var-btn' + (moneyCols.includes(h) ? ' money' : '');
                 btn.textContent = `{${h}}`;
+                btn.title = moneyCols.includes(h) ? 'Se formatea como peso argentino' : '';
                 btn.addEventListener('click', () => {
                     const ta = msgTemplate;
                     const start = ta.selectionStart;
                     const end = ta.selectionEnd;
                     const text = ta.value;
-                    ta.value = text.substring(0, start) + `{${h}}` + text.substring(end);
+                    const insert = `{${h}}`;
+                    ta.value = text.substring(0, start) + insert + text.substring(end);
                     ta.focus();
-                    ta.selectionStart = ta.selectionEnd = start + h.length + 2;
+                    ta.selectionStart = ta.selectionEnd = start + insert.length;
                     updatePreview();
                 });
                 frag.appendChild(btn);
@@ -409,180 +496,136 @@
             varsPanel.appendChild(frag);
         }
 
-        // Message preview
+        // ========== MESSAGE PREVIEW ==========
         msgTemplate.addEventListener('input', updatePreview);
         function updatePreview() {
             if (!rawData.length) return;
-            const row = rawData[0];
+            const row = rawData.find(r => {
+                return phoneColNames.some(c => r[c] && r[c].trim());
+            }) || rawData[0];
             let msg = msgTemplate.value || msgTemplate.placeholder;
             msg = msg.replace(/\{([^}]+)\}/g, (m, key) => {
-                return row[key] !== undefined ? `<strong>${row[key]}</strong>` : m;
+                if (row[key] === undefined) return m;
+                const val = moneyCols.includes(key) ? formatPeso(row[key]) : row[key];
+                return '<strong>' + escHtml(val) + '</strong>';
             });
             msgPreview.innerHTML = msg || 'Vista previa del mensaje...';
         }
 
-        // Build contact rows (flatten phones)
+        // ========== BUILD CONTACT ROWS ==========
         function buildContactRows() {
             contactRows = [];
-            let id = 0;
             rawData.forEach((row, rowIdx) => {
-                const phones = [];
                 selectedPhoneCols.forEach(col => {
                     const val = row[col];
                     if (!val || !val.trim()) return;
-                    // Telefono_1 can have multiple numbers separated by -
                     if (col === 'Telefono_1' && val.includes('-')) {
                         val.split('-').forEach(num => {
                             const clean = num.trim();
-                            if (clean) phones.push({ col, number: clean });
+                            if (clean) contactRows.push({ rowIdx, row, col, number: clean });
                         });
                     } else {
-                        phones.push({ col, number: val.trim() });
+                        contactRows.push({ rowIdx, row, col, number: val.trim() });
                     }
                 });
-                if (phones.length === 0) return;
-                phones.forEach(p => {
-                    contactRows.push({
-                        id: id++,
-                        rowIdx,
-                        row,
-                        col: p.col,
-                        number: p.number,
-                        selected: true
-                    });
-                });
             });
-            updateStats();
+            updateExportStats();
         }
 
-        function updateStats() {
-            const total = contactRows.length;
-            const selected = contactRows.filter(c => c.selected).length;
-            stats.innerHTML = `Total: <span>${total}</span> teléfonos | Seleccionados: <span>${selected}</span>`;
-            exportStats.innerHTML = `Se exportarán <span>${selected}</span> filas`;
+        function updateExportStats() {
+            exportStats.innerHTML = `Se exportaran <span>${contactRows.length}</span> filas con telefono`;
         }
 
-        // Search
-        searchBox.addEventListener('input', function() {
-            searchTerm = this.value.toLowerCase();
-            renderTable();
-        });
+        // ========== COLUMN SELECTOR (step 4) ==========
+        function renderColumnSelector() {
+            const skip = new Set([...phoneColNames, 'Telefono', 'Mensaje']);
+            const availableCols = headers.filter(h => !skip.has(h) && !extraCols.includes(h));
 
-        // Select/Deselect all
-        document.getElementById('btnSelectAll').addEventListener('click', () => {
-            contactRows.forEach(c => c.selected = true);
-            renderTable();
-            updateStats();
-        });
-        document.getElementById('btnDeselectAll').addEventListener('click', () => {
-            contactRows.forEach(c => c.selected = false);
-            renderTable();
-            updateStats();
-        });
-
-        // Table rendering (virtualized for performance)
-        function renderTable() {
-            tableHead.innerHTML = `<tr>
-                <th class="cb-cell"><input type="checkbox" id="checkAll" checked></th>
-                <th>Razón Social</th>
-                <th>Cuenta</th>
-                <th>Teléfono</th>
-                <th>Columna</th>
-                <th>Mensaje</th>
-            </tr>`;
-
-            document.getElementById('checkAll').addEventListener('change', function() {
-                const filtered = getFilteredRows();
-                filtered.forEach(c => c.selected = this.checked);
-                renderTable();
-                updateStats();
-            });
-
-            const filtered = getFilteredRows();
-            const frag = document.createDocumentFragment();
-            // Limit display for performance
-            const displayLimit = 500;
-            const toShow = filtered.slice(0, displayLimit);
-
-            toShow.forEach(c => {
-                const tr = document.createElement('tr');
-                if (!c.selected) tr.classList.add('excluded');
-                const msg = buildMessage(c.row);
-                const shortMsg = msg.length > 80 ? msg.substring(0, 80) + '...' : msg;
-                tr.innerHTML = `
-                    <td class="cb-cell"><input type="checkbox" ${c.selected ? 'checked' : ''} data-id="${c.id}"></td>
-                    <td>${esc(c.row['Razon Social'] || '')}</td>
-                    <td>${esc(c.row['Cuenta'] || '')}</td>
-                    <td><strong>${esc(c.number)}</strong></td>
-                    <td>${esc(c.col)}</td>
-                    <td title="${esc(msg)}">${esc(shortMsg)}</td>
-                `;
-                tr.querySelector('input').addEventListener('change', function() {
-                    c.selected = this.checked;
-                    if (c.selected) tr.classList.remove('excluded');
-                    else tr.classList.add('excluded');
-                    updateStats();
+            colsAvailable.innerHTML = '';
+            availableCols.forEach(col => {
+                const div = document.createElement('div');
+                div.className = 'col-item';
+                div.innerHTML = `<span class="col-name">${escHtml(col)}</span><button class="col-action" title="Agregar">+</button>`;
+                div.querySelector('.col-action').addEventListener('click', () => {
+                    extraCols.push(col);
+                    renderColumnSelector();
                 });
-                frag.appendChild(tr);
+                colsAvailable.appendChild(div);
             });
 
-            tableBody.innerHTML = '';
-            tableBody.appendChild(frag);
-
-            if (filtered.length > displayLimit) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td colspan="6" style="text-align:center;color:#64748b;padding:12px;">
-                    Mostrando ${displayLimit} de ${filtered.length} resultados. Usá el buscador para filtrar.
-                </td>`;
-                tableBody.appendChild(tr);
+            colsSelected.innerHTML = '';
+            if (extraCols.length === 0) {
+                colsSelected.innerHTML = '<p style="color:#475569;font-size:0.85rem;padding:8px;">Ninguna columna extra agregada. El Excel tendra solo Telefono y Mensaje.</p>';
+                return;
             }
 
-            updateStats();
-        }
+            extraCols.forEach((col, idx) => {
+                const div = document.createElement('div');
+                div.className = 'col-item';
+                div.draggable = true;
+                div.dataset.idx = idx;
+                div.innerHTML = `<span class="drag-handle">&#9776;</span><span class="col-name">${escHtml(col)}</span><button class="col-action remove" title="Quitar">&times;</button>`;
 
-        function getFilteredRows() {
-            if (!searchTerm) return contactRows;
-            return contactRows.filter(c => {
-                const name = (c.row['Razon Social'] || '').toLowerCase();
-                const cuenta = (c.row['Cuenta'] || '').toLowerCase();
-                const phone = c.number.toLowerCase();
-                return name.includes(searchTerm) || cuenta.includes(searchTerm) || phone.includes(searchTerm);
+                div.querySelector('.col-action').addEventListener('click', () => {
+                    extraCols.splice(idx, 1);
+                    renderColumnSelector();
+                });
+
+                // Drag and drop for reordering
+                div.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', idx);
+                    div.classList.add('dragging');
+                });
+                div.addEventListener('dragend', () => div.classList.remove('dragging'));
+                div.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    div.classList.add('drag-over');
+                });
+                div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+                div.addEventListener('drop', e => {
+                    e.preventDefault();
+                    div.classList.remove('drag-over');
+                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIdx = idx;
+                    if (fromIdx === toIdx) return;
+                    const item = extraCols.splice(fromIdx, 1)[0];
+                    extraCols.splice(toIdx, 0, item);
+                    renderColumnSelector();
+                });
+
+                colsSelected.appendChild(div);
             });
         }
 
+        // ========== BUILD MESSAGE ==========
         function buildMessage(row) {
             let tpl = msgTemplate.value || msgTemplate.placeholder;
             return tpl.replace(/\{([^}]+)\}/g, (m, key) => {
-                return row[key] !== undefined ? row[key] : m;
+                if (row[key] === undefined) return m;
+                return moneyCols.includes(key) ? formatPeso(row[key]) : row[key];
             });
         }
 
-        function esc(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
-        }
-
-        // Export CSV
+        // ========== EXPORT ==========
         document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
 
         function exportCSV() {
-            const selected = contactRows.filter(c => c.selected);
-            if (!selected.length) {
-                showToast('No hay contactos seleccionados');
+            if (!contactRows.length) {
+                showToast('No hay telefonos para exportar');
                 return;
             }
             const sep = ';';
-            const lines = ['Telefono' + sep + 'Mensaje' + sep + 'Razon Social' + sep + 'Cuenta'];
-            selected.forEach(c => {
+            // Header: Telefono + Mensaje + extra columns
+            const headerRow = ['Telefono', 'Mensaje', ...extraCols];
+            const lines = [headerRow.map(csvField).join(sep)];
+
+            contactRows.forEach(c => {
                 const msg = buildMessage(c.row);
-                lines.push(
-                    csvField(c.number) + sep +
-                    csvField(msg) + sep +
-                    csvField(c.row['Razon Social'] || '') + sep +
-                    csvField(c.row['Cuenta'] || '')
-                );
+                const row = [c.number, msg];
+                extraCols.forEach(col => { row.push(c.row[col] || ''); });
+                lines.push(row.map(csvField).join(sep));
             });
+
             const bom = '\uFEFF';
             const blob = new Blob([bom + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
@@ -591,14 +634,21 @@
             a.download = 'contactos_mensajes.csv';
             a.click();
             URL.revokeObjectURL(url);
-            showToast(`CSV descargado con ${selected.length} contactos`);
+            showToast('CSV descargado con ' + contactRows.length + ' telefonos');
         }
 
         function csvField(val) {
+            val = String(val);
             if (val.includes(';') || val.includes('"') || val.includes('\n')) {
                 return '"' + val.replace(/"/g, '""') + '"';
             }
             return val;
+        }
+
+        function escHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
         }
 
         function showToast(msg) {
