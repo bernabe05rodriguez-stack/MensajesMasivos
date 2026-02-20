@@ -3,213 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mensajes Masivos - Generador de contactos</title>
+    <title>Creador de Mensajes - MAVERIX</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: #0a0a0a;
+            color: #d4d4d4;
             min-height: 100vh;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 {
+        .container { max-width: 1000px; margin: 0 auto; padding: 24px 20px; }
+
+        /* Header */
+        .header {
             text-align: center;
-            font-size: 1.8rem;
-            padding: 20px 0;
-            color: #38bdf8;
+            padding: 32px 0 28px;
         }
-        h2 {
-            font-size: 1.1rem;
-            color: #94a3b8;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 6px;
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 300;
+            color: #a3a3a3;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
+        .header .brand {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 6px;
+            margin-top: 2px;
+        }
+
+        /* Steps */
         .step {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid #334155;
+            background: #141414;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+            transition: opacity 0.3s;
         }
-        .step.disabled { opacity: 0.4; pointer-events: none; }
+        .step.disabled { opacity: 0.3; pointer-events: none; }
+        h2 {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #525252;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
 
         /* Upload */
         .upload-area {
-            border: 2px dashed #475569;
-            border-radius: 8px;
-            padding: 40px;
+            border: 1px dashed #333;
+            border-radius: 12px;
+            padding: 44px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
         }
         .upload-area:hover, .upload-area.dragover {
-            border-color: #38bdf8;
-            background: rgba(56,189,248,0.05);
+            border-color: #fff;
+            background: rgba(255,255,255,0.02);
         }
         .upload-area.hidden { display: none; }
         .upload-area input { display: none; }
-        .upload-area p { color: #94a3b8; }
-        .upload-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .upload-area p { color: #525252; font-size: 0.9rem; }
+        .upload-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.4; }
 
         .file-loaded {
             display: none;
-            padding: 16px;
-            background: #0f172a;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            animation: fadeSlideIn 0.4s ease-out;
+            padding: 16px 20px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            animation: fadeIn 0.4s ease-out;
         }
-        .file-loaded.show { display: flex; align-items: center; gap: 12px; }
-        .file-loaded .file-name {
-            flex: 1;
-            color: #4ade80;
-            font-weight: 600;
-        }
-        .file-loaded .file-stats { color: #64748b; font-size: 0.85rem; }
+        .file-loaded.show { display: flex; align-items: center; gap: 14px; }
+        .file-loaded .file-name { flex: 1; color: #4ade80; font-weight: 600; font-size: 0.95rem; }
+        .file-loaded .file-stats { color: #525252; font-size: 0.8rem; }
         .btn-remove {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: background 0.2s;
+            background: transparent; color: #ef4444; border: 1px solid #ef4444;
+            padding: 6px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 0.8rem; font-weight: 500; transition: all 0.2s;
         }
-        .btn-remove:hover { background: #dc2626; }
+        .btn-remove:hover { background: #ef4444; color: #fff; }
 
-        /* Loading spinner */
-        .loading-overlay {
-            display: none;
-            padding: 40px;
-            text-align: center;
-        }
+        .loading-overlay { display: none; padding: 44px; text-align: center; }
         .loading-overlay.show { display: block; }
         .spinner {
-            width: 48px; height: 48px;
-            border: 4px solid #334155;
-            border-top-color: #38bdf8;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
+            width: 40px; height: 40px;
+            border: 3px solid #222; border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.7s linear infinite;
+            margin: 0 auto 14px;
         }
-        .loading-overlay p { color: #94a3b8; }
+        .loading-overlay p { color: #525252; font-size: 0.85rem; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeSlideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Phone columns */
-        .phone-cols { display: flex; flex-wrap: wrap; gap: 8px; }
-        .phone-cols label {
-            background: #0f172a;
-            padding: 8px 14px;
-            border-radius: 6px;
+        /* Toggle chips (phone cols & column selector) */
+        .chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        .chip {
+            padding: 7px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            border: 1px solid #334155;
+            font-size: 0.82rem;
+            border: 1px solid #262626;
+            background: #1a1a1a;
+            color: #525252;
             transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9rem;
+            user-select: none;
         }
-        .phone-cols label:hover { border-color: #38bdf8; }
-        .phone-cols input:checked + span { color: #38bdf8; font-weight: 600; }
+        .chip:hover { border-color: #404040; }
+        .chip.active {
+            background: #fff;
+            color: #0a0a0a;
+            border-color: #fff;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(255,255,255,0.1);
+        }
+        .chip .chip-count { opacity: 0.5; margin-left: 4px; font-size: 0.75rem; }
 
         /* Message template */
         .msg-area { display: flex; gap: 12px; flex-wrap: wrap; }
         .msg-area textarea {
-            flex: 1; min-width: 300px; min-height: 120px;
-            background: #0f172a; color: #e2e8f0;
-            border: 1px solid #334155; border-radius: 8px;
-            padding: 12px; font-family: inherit; font-size: 0.95rem; resize: vertical;
+            flex: 1; min-width: 280px; min-height: 110px;
+            background: #1a1a1a; color: #d4d4d4;
+            border: 1px solid #262626; border-radius: 10px;
+            padding: 14px; font-family: inherit; font-size: 0.9rem; resize: vertical;
         }
-        .msg-area textarea:focus { outline: none; border-color: #38bdf8; }
+        .msg-area textarea:focus { outline: none; border-color: #404040; }
         .variables-panel {
-            min-width: 220px; max-height: 260px; overflow-y: auto;
-            background: #0f172a; border-radius: 8px; padding: 10px; border: 1px solid #334155;
+            min-width: 200px; max-height: 240px; overflow-y: auto;
+            background: #1a1a1a; border-radius: 10px; padding: 10px; border: 1px solid #262626;
         }
-        .variables-panel p { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
+        .variables-panel p { font-size: 0.75rem; color: #404040; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
         .var-btn {
-            display: inline-block; background: #334155; color: #cbd5e1;
-            border: none; padding: 4px 10px; border-radius: 4px; margin: 2px;
-            cursor: pointer; font-size: 0.8rem; transition: background 0.15s;
+            display: inline-block; background: #262626; color: #737373;
+            border: none; padding: 4px 10px; border-radius: 6px; margin: 2px;
+            cursor: pointer; font-size: 0.78rem; transition: all 0.15s;
         }
-        .var-btn:hover { background: #475569; color: #38bdf8; }
-        .var-btn.money { border-left: 3px solid #4ade80; }
+        .var-btn:hover { background: #333; color: #fff; }
+        .var-btn.money { border-left: 2px solid #4ade80; }
 
-        /* Preview */
         .msg-preview {
-            margin-top: 10px; padding: 12px; background: #0f172a;
-            border-radius: 8px; border: 1px solid #334155;
-            font-size: 0.9rem; color: #94a3b8; white-space: pre-wrap;
+            margin-top: 10px; padding: 14px; background: #1a1a1a;
+            border-radius: 10px; border: 1px solid #262626;
+            font-size: 0.85rem; color: #525252; white-space: pre-wrap;
         }
-        .msg-preview strong { color: #38bdf8; }
-
-        /* Column selector (step 4) */
-        .col-selector { display: flex; gap: 16px; flex-wrap: wrap; }
-        .col-list-available, .col-list-selected {
-            flex: 1; min-width: 250px;
-            background: #0f172a; border-radius: 8px; padding: 12px; border: 1px solid #334155;
-        }
-        .col-list-available h3, .col-list-selected h3 {
-            font-size: 0.9rem; color: #64748b; margin-bottom: 8px;
-        }
-        .col-item {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 10px; margin: 4px 0; border-radius: 6px;
-            background: #1e293b; cursor: pointer; transition: all 0.15s;
-            font-size: 0.85rem; border: 1px solid transparent;
-        }
-        .col-item:hover { border-color: #38bdf8; }
-        .col-item .drag-handle { color: #475569; cursor: grab; }
-        .col-item .col-name { flex: 1; }
-        .col-item .col-action {
-            background: none; border: none; color: #38bdf8; cursor: pointer;
-            font-size: 1.1rem; padding: 0 4px; font-weight: bold;
-        }
-        .col-item .col-action.remove { color: #ef4444; }
-        .col-item.dragging { opacity: 0.5; border: 1px dashed #38bdf8; }
-        .col-item.drag-over { border-top: 2px solid #38bdf8; }
+        .msg-preview strong { color: #fff; }
+        .hint { font-size: 0.8rem; color: #404040; margin-bottom: 10px; }
+        .hint code { color: #737373; background: #1a1a1a; padding: 1px 5px; border-radius: 4px; }
 
         /* Stats */
-        .stats { font-size: 0.85rem; color: #64748b; padding: 8px 0; }
-        .stats span { color: #38bdf8; font-weight: 600; }
+        .stats { font-size: 0.82rem; color: #404040; padding: 6px 0; }
+        .stats span { color: #fff; font-weight: 600; }
 
         /* Buttons */
         .btn {
-            padding: 10px 20px; border: none; border-radius: 8px;
-            font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;
+            padding: 12px 28px; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
         }
-        .btn-success { background: #4ade80; color: #0f172a; }
-        .btn-success:hover { background: #86efac; }
+        .btn-export {
+            background: #fff; color: #0a0a0a;
+            box-shadow: 0 2px 16px rgba(255,255,255,0.1);
+        }
+        .btn-export:hover { box-shadow: 0 4px 24px rgba(255,255,255,0.2); transform: translateY(-1px); }
 
         /* Toast */
         .toast {
-            position: fixed; bottom: 20px; right: 20px;
-            background: #4ade80; color: #0f172a;
-            padding: 12px 20px; border-radius: 8px; font-weight: 600;
-            transform: translateY(100px); opacity: 0;
+            position: fixed; bottom: 24px; right: 24px;
+            background: #fff; color: #0a0a0a;
+            padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 0.9rem;
+            transform: translateY(80px); opacity: 0;
             transition: all 0.3s; z-index: 100;
+            box-shadow: 0 4px 24px rgba(255,255,255,0.15);
         }
         .toast.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Mensajes Masivos</h1>
+        <div class="header">
+            <h1>Creador de Mensajes</h1>
+            <div class="brand">MAVERIX</div>
+        </div>
 
         <!-- STEP 1: Upload -->
         <div class="step" id="step1">
-            <h2>1. Subir archivo CSV</h2>
+            <h2>1. Archivo CSV</h2>
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">&#128194;</div>
-                <p>Arrastra el archivo <strong>Informe de Cuentas.csv</strong> aca o hace clic para seleccionarlo</p>
+                <p>Arrastra el archivo <strong>Informe de Cuentas.csv</strong> aca o hace clic</p>
                 <input type="file" id="fileInput" accept=".csv,.txt">
             </div>
             <div class="loading-overlay" id="loadingOverlay">
@@ -221,54 +206,43 @@
                     <div class="file-name" id="fileName"></div>
                     <div class="file-stats" id="fileStats"></div>
                 </div>
-                <button class="btn-remove" id="btnRemoveFile">Quitar y cargar otro</button>
+                <button class="btn-remove" id="btnRemoveFile">Cambiar archivo</button>
             </div>
         </div>
 
         <!-- STEP 2: Phone columns -->
         <div class="step disabled" id="step2">
-            <h2>2. Columnas de telefono a incluir</h2>
-            <div class="phone-cols" id="phoneCols"></div>
+            <h2>2. Columnas de telefono</h2>
+            <div class="chip-group" id="phoneCols"></div>
         </div>
 
         <!-- STEP 3: Message template -->
         <div class="step disabled" id="step3">
             <h2>3. Mensaje personalizado</h2>
-            <p style="font-size:0.85rem;color:#64748b;margin-bottom:10px;">
-                Usa <code style="color:#38bdf8">{NombreColumna}</code> para insertar datos. Las variables de dinero <code style="color:#4ade80">{$ Asig.}</code> y <code style="color:#4ade80">{$ Hist.}</code> se formatean como pesos automaticamente.
+            <p class="hint">
+                Usa <code>{NombreColumna}</code> para insertar datos. <code>{$ Asig.}</code> y <code>{$ Hist.}</code> se formatean como pesos.
             </p>
             <div class="msg-area">
                 <textarea id="msgTemplate" placeholder="Hola {Razon Social}, te contactamos por tu cuenta {Cuenta}. Tu saldo es de {$ Asig.}. Contactanos para regularizar tu situacion."></textarea>
                 <div class="variables-panel" id="varsPanel">
-                    <p>Click para insertar variable:</p>
+                    <p>Variables</p>
                 </div>
             </div>
             <div class="msg-preview" id="msgPreview">Vista previa del mensaje...</div>
         </div>
 
-        <!-- STEP 4: Column order for export -->
+        <!-- STEP 4: Extra columns -->
         <div class="step disabled" id="step4">
-            <h2>4. Columnas adicionales en el Excel (arrastra para ordenar)</h2>
-            <p style="font-size:0.85rem;color:#64748b;margin-bottom:10px;">
-                El Excel siempre tendra: <strong>Telefono</strong> y <strong>Mensaje</strong>. Agrega columnas extra y ordenalas.
-            </p>
-            <div class="col-selector">
-                <div class="col-list-available">
-                    <h3>Columnas disponibles</h3>
-                    <div id="colsAvailable"></div>
-                </div>
-                <div class="col-list-selected">
-                    <h3>Columnas en el Excel (arrastra para reordenar)</h3>
-                    <div id="colsSelected"></div>
-                </div>
-            </div>
+            <h2>4. Columnas adicionales en el Excel</h2>
+            <p class="hint">El Excel siempre tiene <strong>Telefono</strong> y <strong>Mensaje</strong>. Selecciona columnas extra.</p>
+            <div class="chip-group" id="extraColsChips"></div>
         </div>
 
         <!-- STEP 5: Export -->
         <div class="step disabled" id="step5">
             <h2>5. Exportar</h2>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <button class="btn btn-success" id="btnExportCSV">Descargar CSV</button>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+                <button class="btn btn-export" id="btnExportCSV">Descargar CSV</button>
                 <div class="stats" id="exportStats"></div>
             </div>
         </div>
@@ -278,16 +252,14 @@
 
     <script>
     (function() {
-        // State
         let rawData = [];
         let headers = [];
         const phoneColNames = ['Telefono_1','Telefono_2','Telefono_3','Telefono_4','Telefono_5','Telefono_6','Telefono_7','Telefono_8','Telefono_9'];
         let selectedPhoneCols = new Set(phoneColNames);
         let contactRows = [];
-        let extraCols = []; // columns user added to export
+        let extraCols = new Set();
         const moneyCols = ['$ Asig.', '$ Hist.'];
 
-        // Elements
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const loadingOverlay = document.getElementById('loadingOverlay');
@@ -299,10 +271,9 @@
         const varsPanel = document.getElementById('varsPanel');
         const msgPreview = document.getElementById('msgPreview');
         const exportStats = document.getElementById('exportStats');
-        const colsAvailable = document.getElementById('colsAvailable');
-        const colsSelected = document.getElementById('colsSelected');
+        const extraColsChips = document.getElementById('extraColsChips');
 
-        // ========== CSV PARSING (handles quoted fields) ==========
+        // ========== CSV PARSING ==========
         function parseCSVLine(line) {
             const result = [];
             let current = '';
@@ -311,24 +282,13 @@
                 const ch = line[i];
                 if (inQuotes) {
                     if (ch === '"') {
-                        if (i + 1 < line.length && line[i + 1] === '"') {
-                            current += '"';
-                            i++;
-                        } else {
-                            inQuotes = false;
-                        }
-                    } else {
-                        current += ch;
-                    }
+                        if (i + 1 < line.length && line[i + 1] === '"') { current += '"'; i++; }
+                        else inQuotes = false;
+                    } else current += ch;
                 } else {
-                    if (ch === '"') {
-                        inQuotes = true;
-                    } else if (ch === ';') {
-                        result.push(current.trim());
-                        current = '';
-                    } else {
-                        current += ch;
-                    }
+                    if (ch === '"') inQuotes = true;
+                    else if (ch === ';') { result.push(current.trim()); current = ''; }
+                    else current += ch;
                 }
             }
             result.push(current.trim());
@@ -348,7 +308,6 @@
             }
         }
 
-        // ========== MONEY FORMAT ==========
         function formatPeso(val) {
             const num = parseFloat(val);
             if (isNaN(num)) return val;
@@ -360,25 +319,18 @@
         uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
         uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', e => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
+            e.preventDefault(); uploadArea.classList.remove('dragover');
             if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
         });
         fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
-
         document.getElementById('btnRemoveFile').addEventListener('click', resetFile);
 
         function handleFile(file) {
-            // Show loading
             uploadArea.classList.add('hidden');
             loadingOverlay.classList.add('show');
-
             const reader = new FileReader();
             reader.onload = e => {
-                const text = e.target.result;
-                parseCSV(text);
-
-                // Count total phones
+                parseCSV(e.target.result);
                 let totalPhones = 0;
                 rawData.forEach(row => {
                     phoneColNames.forEach(col => {
@@ -386,18 +338,14 @@
                         if (!val) return;
                         if (col === 'Telefono_1' && val.includes('-')) {
                             totalPhones += val.split('-').filter(n => n.trim()).length;
-                        } else {
-                            totalPhones++;
-                        }
+                        } else totalPhones++;
                     });
                 });
-
-                // Simulate slight delay for animation feel
                 setTimeout(() => {
                     loadingOverlay.classList.remove('show');
                     fileLoaded.classList.add('show');
                     fileName.textContent = file.name;
-                    fileStats.textContent = `${rawData.length} registros | ${totalPhones} telefonos encontrados`;
+                    fileStats.textContent = `${rawData.length} registros | ${totalPhones} telefonos`;
                     enableSteps();
                 }, 400);
             };
@@ -405,39 +353,29 @@
         }
 
         function resetFile() {
-            rawData = [];
-            headers = [];
-            extraCols = [];
-            selectedPhoneCols = new Set(phoneColNames);
-            contactRows = [];
+            rawData = []; headers = []; extraCols = new Set();
+            selectedPhoneCols = new Set(phoneColNames); contactRows = [];
             fileLoaded.classList.remove('show');
             uploadArea.classList.remove('hidden');
             fileInput.value = '';
-            document.getElementById('step2').classList.add('disabled');
-            document.getElementById('step3').classList.add('disabled');
-            document.getElementById('step4').classList.add('disabled');
-            document.getElementById('step5').classList.add('disabled');
+            ['step2','step3','step4','step5'].forEach(s => document.getElementById(s).classList.add('disabled'));
             phoneColsEl.innerHTML = '';
-            varsPanel.innerHTML = '<p>Click para insertar variable:</p>';
+            varsPanel.innerHTML = '<p>Variables</p>';
             msgPreview.textContent = 'Vista previa del mensaje...';
-            colsAvailable.innerHTML = '';
-            colsSelected.innerHTML = '';
+            extraColsChips.innerHTML = '';
             exportStats.innerHTML = '';
         }
 
         function enableSteps() {
-            document.getElementById('step2').classList.remove('disabled');
-            document.getElementById('step3').classList.remove('disabled');
-            document.getElementById('step4').classList.remove('disabled');
-            document.getElementById('step5').classList.remove('disabled');
+            ['step2','step3','step4','step5'].forEach(s => document.getElementById(s).classList.remove('disabled'));
             renderPhoneCols();
             renderVariables();
             buildContactRows();
-            renderColumnSelector();
+            renderExtraColsChips();
             updatePreview();
         }
 
-        // ========== PHONE COLUMN CHECKBOXES ==========
+        // ========== PHONE COLUMN CHIPS ==========
         function renderPhoneCols() {
             phoneColsEl.innerHTML = '';
             phoneColNames.forEach(col => {
@@ -446,46 +384,45 @@
                 rawData.forEach(r => {
                     const val = r[col];
                     if (!val) return;
-                    if (col === 'Telefono_1' && val.includes('-')) {
+                    if (col === 'Telefono_1' && val.includes('-'))
                         count += val.split('-').filter(n => n.trim()).length;
-                    } else {
-                        count++;
-                    }
+                    else count++;
                 });
-                const label = document.createElement('label');
-                label.innerHTML = `<input type="checkbox" ${count > 0 ? 'checked' : ''} data-col="${col}"><span>${col} (${count})</span>`;
-                if (count === 0) {
-                    selectedPhoneCols.delete(col);
-                    label.style.opacity = '0.4';
-                }
-                label.querySelector('input').addEventListener('change', function() {
-                    if (this.checked) selectedPhoneCols.add(col);
-                    else selectedPhoneCols.delete(col);
+                const chip = document.createElement('div');
+                chip.className = 'chip' + (count > 0 ? ' active' : '');
+                chip.innerHTML = `${col}<span class="chip-count">${count}</span>`;
+                if (count === 0) { selectedPhoneCols.delete(col); chip.style.opacity = '0.3'; }
+                chip.addEventListener('click', () => {
+                    if (count === 0) return;
+                    if (selectedPhoneCols.has(col)) {
+                        selectedPhoneCols.delete(col);
+                        chip.classList.remove('active');
+                    } else {
+                        selectedPhoneCols.add(col);
+                        chip.classList.add('active');
+                    }
                     buildContactRows();
                 });
-                phoneColsEl.appendChild(label);
+                phoneColsEl.appendChild(chip);
             });
         }
 
-        // ========== VARIABLES PANEL ==========
+        // ========== VARIABLES ==========
         function renderVariables() {
             const frag = document.createDocumentFragment();
             const p = document.createElement('p');
-            p.textContent = 'Click para insertar variable:';
+            p.textContent = 'Variables';
             frag.appendChild(p);
             headers.forEach(h => {
                 if (phoneColNames.includes(h)) return;
                 const btn = document.createElement('button');
                 btn.className = 'var-btn' + (moneyCols.includes(h) ? ' money' : '');
                 btn.textContent = `{${h}}`;
-                btn.title = moneyCols.includes(h) ? 'Se formatea como peso argentino' : '';
                 btn.addEventListener('click', () => {
                     const ta = msgTemplate;
-                    const start = ta.selectionStart;
-                    const end = ta.selectionEnd;
-                    const text = ta.value;
+                    const start = ta.selectionStart, end = ta.selectionEnd;
                     const insert = `{${h}}`;
-                    ta.value = text.substring(0, start) + insert + text.substring(end);
+                    ta.value = ta.value.substring(0, start) + insert + ta.value.substring(end);
                     ta.focus();
                     ta.selectionStart = ta.selectionEnd = start + insert.length;
                     updatePreview();
@@ -496,13 +433,10 @@
             varsPanel.appendChild(frag);
         }
 
-        // ========== MESSAGE PREVIEW ==========
         msgTemplate.addEventListener('input', updatePreview);
         function updatePreview() {
             if (!rawData.length) return;
-            const row = rawData.find(r => {
-                return phoneColNames.some(c => r[c] && r[c].trim());
-            }) || rawData[0];
+            const row = rawData.find(r => phoneColNames.some(c => r[c] && r[c].trim())) || rawData[0];
             let msg = msgTemplate.value || msgTemplate.placeholder;
             msg = msg.replace(/\{([^}]+)\}/g, (m, key) => {
                 if (row[key] === undefined) return m;
@@ -512,7 +446,7 @@
             msgPreview.innerHTML = msg || 'Vista previa del mensaje...';
         }
 
-        // ========== BUILD CONTACT ROWS ==========
+        // ========== CONTACT ROWS ==========
         function buildContactRows() {
             contactRows = [];
             rawData.forEach((row, rowIdx) => {
@@ -533,67 +467,28 @@
         }
 
         function updateExportStats() {
-            exportStats.innerHTML = `Se exportaran <span>${contactRows.length}</span> filas con telefono`;
+            exportStats.innerHTML = `Se exportaran <span>${contactRows.length}</span> filas`;
         }
 
-        // ========== COLUMN SELECTOR (step 4) ==========
-        function renderColumnSelector() {
-            const skip = new Set([...phoneColNames, 'Telefono', 'Mensaje']);
-            const availableCols = headers.filter(h => !skip.has(h) && !extraCols.includes(h));
-
-            colsAvailable.innerHTML = '';
-            availableCols.forEach(col => {
-                const div = document.createElement('div');
-                div.className = 'col-item';
-                div.innerHTML = `<span class="col-name">${escHtml(col)}</span><button class="col-action" title="Agregar">+</button>`;
-                div.querySelector('.col-action').addEventListener('click', () => {
-                    extraCols.push(col);
-                    renderColumnSelector();
+        // ========== EXTRA COLUMNS CHIPS (step 4) ==========
+        function renderExtraColsChips() {
+            extraColsChips.innerHTML = '';
+            const skip = new Set(phoneColNames);
+            headers.forEach(col => {
+                if (skip.has(col)) return;
+                const chip = document.createElement('div');
+                chip.className = 'chip' + (extraCols.has(col) ? ' active' : '');
+                chip.textContent = col;
+                chip.addEventListener('click', () => {
+                    if (extraCols.has(col)) {
+                        extraCols.delete(col);
+                        chip.classList.remove('active');
+                    } else {
+                        extraCols.add(col);
+                        chip.classList.add('active');
+                    }
                 });
-                colsAvailable.appendChild(div);
-            });
-
-            colsSelected.innerHTML = '';
-            if (extraCols.length === 0) {
-                colsSelected.innerHTML = '<p style="color:#475569;font-size:0.85rem;padding:8px;">Ninguna columna extra agregada. El Excel tendra solo Telefono y Mensaje.</p>';
-                return;
-            }
-
-            extraCols.forEach((col, idx) => {
-                const div = document.createElement('div');
-                div.className = 'col-item';
-                div.draggable = true;
-                div.dataset.idx = idx;
-                div.innerHTML = `<span class="drag-handle">&#9776;</span><span class="col-name">${escHtml(col)}</span><button class="col-action remove" title="Quitar">&times;</button>`;
-
-                div.querySelector('.col-action').addEventListener('click', () => {
-                    extraCols.splice(idx, 1);
-                    renderColumnSelector();
-                });
-
-                // Drag and drop for reordering
-                div.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('text/plain', idx);
-                    div.classList.add('dragging');
-                });
-                div.addEventListener('dragend', () => div.classList.remove('dragging'));
-                div.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    div.classList.add('drag-over');
-                });
-                div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
-                div.addEventListener('drop', e => {
-                    e.preventDefault();
-                    div.classList.remove('drag-over');
-                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                    const toIdx = idx;
-                    if (fromIdx === toIdx) return;
-                    const item = extraCols.splice(fromIdx, 1)[0];
-                    extraCols.splice(toIdx, 0, item);
-                    renderColumnSelector();
-                });
-
-                colsSelected.appendChild(div);
+                extraColsChips.appendChild(chip);
             });
         }
 
@@ -610,20 +505,18 @@
         document.getElementById('btnExportCSV').addEventListener('click', exportCSV);
 
         function exportCSV() {
-            if (!contactRows.length) {
-                showToast('No hay telefonos para exportar');
-                return;
-            }
+            if (!contactRows.length) { showToast('No hay telefonos para exportar'); return; }
             const sep = ';';
-            // Header: Telefono + Mensaje + extra columns
-            const headerRow = ['Telefono', 'Mensaje', ...extraCols];
+            const extraArr = headers.filter(h => extraCols.has(h));
+            const headerRow = ['Telefono', 'Mensaje', ...extraArr];
             const lines = [headerRow.map(csvField).join(sep)];
 
             contactRows.forEach(c => {
+                const phone = '="+549' + c.number + ',"';
                 const msg = buildMessage(c.row);
-                const row = ['+549' + c.number + ',', msg];
-                extraCols.forEach(col => { row.push(c.row[col] || ''); });
-                lines.push(row.map(csvField).join(sep));
+                const row = [phone, csvField(msg)];
+                extraArr.forEach(col => row.push(csvField(c.row[col] || '')));
+                lines.push(row.join(sep));
             });
 
             const bom = '\uFEFF';
@@ -639,9 +532,8 @@
 
         function csvField(val) {
             val = String(val);
-            if (val.includes(';') || val.includes('"') || val.includes('\n')) {
+            if (val.includes(';') || val.includes('"') || val.includes('\n'))
                 return '"' + val.replace(/"/g, '""') + '"';
-            }
             return val;
         }
 
