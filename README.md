@@ -23,6 +23,40 @@ Al abrir la página pide el **usuario del ejecutivo** (autocompletado sobre una 
 5. **Nombre del archivo**: antes de que baje, un modal pregunta cómo llamarlo. Viene precargado con **`Maverix - mensaje AAAA-MM-DD`** (fecha ISO para que ordenen cronológico) y el texto queda seleccionado, así se puede tipear encima. El `.csv` va fijo al costado del campo: no se edita ni se duplica si el usuario lo escribe. Los caracteres que Windows no acepta (`\ / : * ? " < > |`) se cambian por `-` en vez de rechazar el nombre. Enter descarga, Escape / click afuera / «Cancelar» cierran sin descargar. Se registra un evento `download` con la cantidad de filas.
 6. En `/admin` (con clave): stats, tabla "quién usa la página" (click en una fila = detalle de cada ingreso/descarga con fecha-hora + sus calificaciones y comentarios) y lista completa de opiniones con `@usuario`.
 
+## El paso 1: qué archivo entra (y cuál no)
+
+**Sólo `.csv`** (se acepta `.txt`, que es lo mismo en texto plano). El `accept` del
+input **no filtra cuando se arrastra**, así que la validación vive en el JS y toda
+carga —arrastrada o elegida— pasa por las mismas tres puertas:
+
+1. **Extensión.** Si es un Excel (`.xlsx`, `.xls`, `.ods`…) el cartel dice cómo
+   arreglarlo: *Archivo → Guardar como → CSV (delimitado por comas)*.
+2. **Contenido binario.** Un `.xlsx` renombrado a `.csv` sigue siendo un ZIP (arranca
+   con `PK`) y un `.xls` viejo es OLE. La extensión miente; los primeros bytes no.
+3. **CSV usable.** Sin filas, sin columnas separables o sin ninguna columna de
+   teléfono → cartel rojo bajo el área de carga y la app queda **como estaba**,
+   nunca "cargada" a medias con datos del archivo anterior.
+
+**El separador se detecta solo** (`;`, `,`, tab o `|`; gana el que parta el encabezado
+en más columnas, con `;` ganando el empate). Si el CSV viene en ANSI de Excel se relee
+con `windows-1252`, así "Panadería" no llega al cliente como "Panader?a".
+
+### La columna de teléfono no tiene que llamarse `Telefono_1`
+
+Se detecta por el **nombre normalizado** (sin tildes, sin mayúsculas y sin separadores),
+no por igualdad literal: `TELEFONO 1`, `Teléfono1`, `Tel_2`, `Celular`, `Móvil` y
+`WhatsApp` valen igual. Las que sólo *empiezan* con la palabra (`Telefono particular`)
+entran únicamente si los datos traen un número real — así una columna `Telefonista`,
+que tiene nombres de personas, no se cuela y sigue disponible como variable
+`{Telefonista}` y como columna extra.
+
+Regresión: `node test-carga-csv.js` (51 casos, sin dependencias). Acepta un `index.html`
+por argumento para correrlo contra producción:
+
+```bash
+curl -s https://creador.fidelizador.online/ > /tmp/prod.html && node test-carga-csv.js /tmp/prod.html
+```
+
 ## El paso 3: armar el mensaje
 
 - **Variables**: `{NombreColumna}` se reemplaza por el dato real de cada fila. `{$ Asig.}` y `{$ Hist.}` salen formateados como pesos argentinos. El panel de la derecha las inserta en la caja que se esté usando.
