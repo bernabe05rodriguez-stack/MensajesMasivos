@@ -52,6 +52,21 @@ Node puro (`http`/`fs`), sin dependencias npm. Imagen `node:20-alpine`, build de
 7. **Un backend caído no debe inutilizar la herramienta.**
    La encuesta y la telemetría usan `AbortController` con timeout + contador de fallos: tras N reintentos guardan local y dejan seguir. El patrón completo de resiliencia (uncaughtException que no mata, clientError, fallback de GET a `index.html`, graceful SIGTERM, HEALTHCHECK) está en el commit `eda083e`.
 
+8. **Todo archivo que entra pasa por las tres puertas de la carga.**
+   El `accept=".csv"` del input **no se aplica al arrastrar**: por ahí entra cualquier
+   cosa. `handleFile()` valida **extensión** → **contenido binario** (`PK` de un xlsx,
+   `ÐÏ` de un xls) → **CSV usable** (`parseCSV` devuelve `{ok, motivo}`). Si algo falla,
+   `fallarCarga()` resetea y muestra el cartel: nunca queda "cargado" a medias.
+
+9. **Las columnas de teléfono se detectan, no se comparan literal.**
+   `phoneColNames` arranca en `Telefono_1..9` pero lo **reemplaza** lo que devuelve
+   `detectarColumnasTelefono()` al leer el archivo: `TELEFONO 1`, `Teléfono1`, `Cel_2`
+   y `Celular principal` valen igual. Las de match débil (empiezan con la palabra pero
+   siguen con letras) entran **solo si los datos traen un número real**, para que
+   `Telefonista` no se cuele. En `PALABRAS_TEL` las palabras largas van primero.
+   - Regresión: `node test-carga-csv.js` (sin dependencias; acepta un `index.html`
+     por argumento para probar contra producción).
+
 ## Cosas que se preguntan seguido
 
 - *"No me sale la encuesta"* → ese ejecutivo **ya calificó en ese navegador** (flag `maverix_fb_sent_<user>`). Es una vez por ejecutivo, a propósito.

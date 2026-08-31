@@ -8,6 +8,53 @@
 ---
 
 
+### El `accept` del input NO existe cuando se arrastra (2026-08-31)
+
+- El `<input type="file" accept=".csv">` filtra **solo el diálogo de explorar archivos**.
+  Al **arrastrar y soltar** entra cualquier cosa: un `.xlsx`, un PDF, una foto. Se leía
+  como texto, `parseCSV()` no encontraba nada y la app quedaba **"cargada" con 0 filas
+  y sin decir una palabra** — el usuario veía el paso 1 en verde y el CSV salía vacío.
+- 📌 **Un archivo pasa por tres puertas, y ninguna sobra:**
+  1. **Extensión** (`validarExtension`) — barata, y es la que da el mensaje útil:
+     si es Excel, dice cómo guardarlo como CSV en vez de "formato inválido".
+  2. **Contenido binario** (`pareceBinario`) — un `.xlsx` renombrado a `.csv` sigue
+     siendo un ZIP (arranca con `PK`), y un `.xls` viejo es OLE (`ÐÏ`). La extensión
+     miente; los primeros bytes no.
+  3. **CSV usable** (`parseCSV`) — devuelve `{ok:false, motivo}` en vez de fallar en
+     silencio: sin filas, sin columnas separables, o sin ninguna columna de teléfono.
+- 🔴 **Fallar tiene que dejar la app como estaba, no a medias.** `fallarCarga()` hace
+  `resetFile()` y **recién ahí** muestra el cartel. `parseCSV()` solo pisa
+  `headers`/`rawData`/`phoneColNames` cuando el archivo sirve: un archivo roto no puede
+  dejar datos del anterior mezclados.
+- Excel en Windows guarda en ANSI. Leído como UTF-8, "Panadería" queda con `\ufffd`.
+  Si aparece ese caracter (y no es binario) se **relee con `windows-1252`**. Ojo con
+  confundirlo con binario: el umbral es 20% de la muestra, no la simple presencia.
+
+### La columna de teléfono no siempre se llama `Telefono_1` (2026-08-31)
+
+- La lista de columnas era literal (`['Telefono_1',...,'Telefono_9']`) y se comparaba
+  con `===`. Un archivo con `TELEFONO 1`, `Teléfono1` o `Cel_2` **no tenía ni una
+  columna de teléfono**: 0 filas para exportar, sin explicación.
+- 📌 **Se detecta por el nombre normalizado** (sin tildes, sin mayúsculas, sin
+  separadores) y con dos criterios:
+  - **Fuerte**: la columna *es* una palabra de teléfono con o sin número al final —
+    `telefono`, `tel3`, `celular2`. Entra siempre.
+  - **Débil**: *empieza* con una pero sigue con letras — `Telefono particular`,
+    `Celular del titular`. Entra **solo si los datos traen un número de verdad**.
+    Así `Telefonista` (nombres de personas) no se cuela y sigue disponible como
+    variable `{Telefonista}` y como columna extra. **El nombre solo no alcanza para
+    decidir; los datos desempatan.**
+- ⚠️ En `PALABRAS_TEL` **las palabras largas van primero**: si `tel` estuviera antes
+  que `telefono`, en `telefono1` el resto sería `efono1` y el match fuerte fallaría.
+- El separador también dejó de ser fijo: gana el que parta el encabezado en más
+  columnas (`;`, `,`, tab, `|`), con `;` ganando el empate — es el de siempre.
+- Si no aparece ninguna columna de teléfono, el cartel **lista las columnas que sí
+  trae el archivo**. Un error que no dice qué encontró obliga a abrir el CSV a mano.
+- Regresión: `node test-carga-csv.js` (51 casos, sin dependencias). Se validó con
+  **control negativo**: mutando `PALABRAS_TEL`, el `accept` de extensión y el chequeo
+  de columnas, el test falla 8/5/3 casos. Un test verde que no se vio fallar no prueba
+  nada.
+
 ### Concatenar un prefijo sin mirar lo que ya está es un bug esperando el dato correcto (2026-08-21)
 
 - `exportCSV()` armaba la celda del teléfono con `'="+549' + c.number + ',"'` sobre el

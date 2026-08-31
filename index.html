@@ -235,6 +235,20 @@
         .try-demo a:hover { opacity: 0.75; }
         .upload-area.hidden ~ .try-demo { display: none; }
         .upload-area input { display: none; }
+        /* Cartel de "ese archivo no sirve". El input tiene accept=".csv", pero
+           eso NO aplica al arrastrar: ahi entra cualquier cosa. */
+        .upload-error {
+            display: none; margin-top: 12px; padding: 12px 16px; text-align: left;
+            border: 1px solid var(--danger); border-radius: var(--r-control);
+            background: var(--surface-2);
+            font-family: var(--sans); font-size: 0.85rem; line-height: 1.65; color: var(--ink);
+        }
+        .upload-error.show { display: block; }
+        .upload-error strong { font-weight: 600; }
+        .upload-error code { font-family: var(--mono); font-size: 0.78rem; }
+        .upload-error .ue-tit { color: var(--danger); font-weight: 600; display: block; margin-bottom: 4px; }
+        .upload-area.hidden ~ .upload-error { display: none; }
+        .up-note { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); margin-top: 10px; }
         .up-prompt { font-family: var(--sans); font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
         .up-prompt strong { color: var(--ink); font-weight: 600; }
         .up-prompt .act { color: var(--accent-text); font-weight: 500; border-bottom: 1px solid var(--accent); }
@@ -643,8 +657,10 @@
             <h2><span class="step-num">1</span>Subí tu archivo CSV</h2>
             <div class="upload-area" id="uploadArea" tabindex="0" role="button">
                 <p class="up-prompt">Arrastrá <strong>Informe de Cuentas.csv</strong> acá, o <span class="act">explorá tus archivos</span></p>
-                <input type="file" id="fileInput" accept=".csv,.txt">
+                <input type="file" id="fileInput" accept=".csv,.txt,text/csv">
+                <p class="up-note">Sólo <strong>.csv</strong>. Si tenés un Excel, guardalo como CSV antes de subirlo.</p>
             </div>
+            <div class="upload-error" id="uploadError"></div>
             <!-- 10 de 36 ejecutivos entraron y se fueron sin descargar nada, y
                  20 usaron la herramienta un solo día. Nadie lo escribió en la
                  encuesta (sólo responden los que llegan al final). Un ejemplo a
@@ -842,7 +858,12 @@
 
         let rawData = [];
         let headers = [];
-        const phoneColNames = ['Telefono_1','Telefono_2','Telefono_3','Telefono_4','Telefono_5','Telefono_6','Telefono_7','Telefono_8','Telefono_9'];
+        // El Informe de Cuentas trae Telefono_1..Telefono_9, pero no todos los
+        // archivos que suben los ejecutivos respetan ese nombre exacto. Esta
+        // lista es solo el arranque: al cargar el archivo se REEMPLAZA por las
+        // columnas que se hayan detectado de verdad (detectarColumnasTelefono).
+        const PHONE_COLS_DEFAULT = ['Telefono_1','Telefono_2','Telefono_3','Telefono_4','Telefono_5','Telefono_6','Telefono_7','Telefono_8','Telefono_9'];
+        let phoneColNames = PHONE_COLS_DEFAULT.slice();
         let selectedPhoneCols = new Set(phoneColNames);
         let contactRows = [];
         let extraCols = new Set();
@@ -861,9 +882,11 @@
         const msgRot = document.getElementById('msgRot');
         const exportStats = document.getElementById('exportStats');
         const extraColsChips = document.getElementById('extraColsChips');
+        const uploadError = document.getElementById('uploadError');
 
         // ========== CSV PARSING ==========
-        function parseCSVLine(line) {
+        function parseCSVLine(line, delim) {
+            const d = delim || ';';
             const result = [];
             let current = '';
             let inQuotes = false;
@@ -876,7 +899,7 @@
                     } else current += ch;
                 } else {
                     if (ch === '"') inQuotes = true;
-                    else if (ch === ';') { result.push(current.trim()); current = ''; }
+                    else if (ch === d) { result.push(current.trim()); current = ''; }
                     else current += ch;
                 }
             }
@@ -884,17 +907,85 @@
             return result;
         }
 
+        // El Informe de Cuentas viene con ";", pero un CSV guardado en otra
+        // maquina (o exportado por otro sistema) puede venir con "," o con
+        // tabulaciones. Gana el separador que parta el encabezado en mas
+        // columnas; ante empate queda ";", que es el caso de siempre.
+        function detectarDelimitador(linea) {
+            let mejor = ';', max = 0;
+            [';', ',', '\t', '|'].forEach(d => {
+                const n = parseCSVLine(linea, d).length;
+                if (n > max) { max = n; mejor = d; }
+            });
+            return mejor;
+        }
+
+        // ===== Columnas de telefono =====
+        // Aparecen como "TELEFONO 1", "Teléfono1", "Tel_2", "Celular principal".
+        // Se detectan por el nombre normalizado, no por igualdad literal.
+        // Ojo con el orden: las palabras largas van primero, para que en
+        // "telefono1" el resto sea "1" y no "efono1".
+        const PALABRAS_TEL = ['telefonos','telefono','telefs','telef','tels','tel','celulares','celular','cels','cel','moviles','movil','whatsapp','whatsap','wsp','wpp','mobile','phone'];
+
+        // Sin tildes, sin mayusculas y sin separadores: "Teléfono 1",
+        // "TELEFONO_1" y "telefono-1" son la misma columna.
+        function normNombreCol(h) {
+            return String(h || '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]/g, '');
+        }
+
+        // Devuelve las columnas de telefono en el orden en que vienen.
+        //  - Fuerte: la columna ES una palabra de telefono, con o sin numero al
+        //    final ("Telefono", "TEL 3", "Celular_2"). Entra siempre.
+        //  - Debil: EMPIEZA con una pero sigue con letras ("Telefono particular",
+        //    "Celular del titular"). Entra solo si los datos traen algun numero
+        //    de verdad. Asi una columna "Telefonista" con nombres adentro no se
+        //    cuela y sigue disponible como variable {Telefonista}.
+        function detectarColumnasTelefono(hs, filas) {
+            const salida = [];
+            hs.forEach(h => {
+                const n = normNombreCol(h);
+                if (!n) return;
+                const palabra = PALABRAS_TEL.find(p => n.startsWith(p));
+                if (!palabra) return;
+                const resto = n.slice(palabra.length);
+                if (/^\d*$/.test(resto)) { salida.push(h); return; }
+                if (filas.some(r => separarNumeros(r[h]).some(x => x.length >= 10))) salida.push(h);
+            });
+            return salida;
+        }
+
+        // Devuelve {ok:true} o {ok:false, motivo:'<html para el cartel>'}.
+        // Solo pisa headers/rawData/phoneColNames si el archivo sirve: un
+        // archivo roto no puede dejar la app a medio cargar.
         function parseCSV(text) {
             const lines = text.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim());
-            if (lines.length < 2) return;
-            headers = parseCSVLine(lines[0]);
-            rawData = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                const row = {};
-                headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
-                rawData.push(row);
+            if (lines.length < 2) {
+                return { ok: false, motivo: 'El archivo está vacío o tiene una sola fila. Tiene que traer la fila de encabezados y al menos un contacto.' };
             }
+            const delim = detectarDelimitador(lines[0]);
+            const hs = parseCSVLine(lines[0], delim).map(h => h.replace(/^\ufeff/, ''));
+            if (hs.filter(h => h).length < 2) {
+                return { ok: false, motivo: 'No se pudieron separar las columnas. ¿Seguro que es un CSV? Se esperan columnas separadas por <code>;</code> o <code>,</code>.' };
+            }
+            const filas = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i], delim);
+                const row = {};
+                hs.forEach((h, idx) => { row[h] = values[idx] || ''; });
+                filas.push(row);
+            }
+            const tels = detectarColumnasTelefono(hs, filas);
+            if (!tels.length) {
+                return { ok: false, motivo: 'No se encontró ninguna columna de teléfono. El archivo trae: <code>' + escHtml(hs.filter(h => h).join(', ')) + '</code>.<br>Tiene que haber al menos una columna cuyo nombre empiece con <code>Telefono</code>, <code>Tel</code>, <code>Celular</code> o <code>Movil</code> (da igual mayúsculas, tildes, guiones o espacios).' };
+            }
+            headers = hs;
+            rawData = filas;
+            phoneColNames = tels;
+            selectedPhoneCols = new Set(tels);
+            return { ok: true };
         }
 
         function formatPeso(val) {
@@ -927,7 +1018,16 @@
         uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', e => {
             e.preventDefault(); uploadArea.classList.remove('dragover');
-            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            const fs = e.dataTransfer.files;
+            if (!fs || !fs.length) {
+                mostrarErrorArchivo('Eso no es un archivo. Arrastrá el <strong>.csv</strong>, no una carpeta ni un texto.');
+                return;
+            }
+            if (fs.length > 1) {
+                mostrarErrorArchivo('Se puede subir <strong>un</strong> archivo por vez. Arrastraste ' + fs.length + '.');
+                return;
+            }
+            handleFile(fs[0]);
         });
         fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
         document.getElementById('btnRemoveFile').addEventListener('click', resetFile);
@@ -953,38 +1053,117 @@
             showToast('Ejemplo cargado · 5 teléfonos de prueba');
         });
 
+        // ⚠️ El accept del input NO se aplica al arrastrar: por ahi entra
+        // cualquier cosa. Antes un .xlsx se leia como texto, parseCSV no
+        // encontraba nada y la app quedaba "cargada" con 0 filas y sin decir
+        // una palabra. Todo archivo pasa por estas tres puertas: extension,
+        // contenido binario y CSV que se pueda usar.
+        const EXT_EXCEL = ['xlsx','xls','xlsm','xlsb','ods','numbers'];
+        const EXT_OK = ['csv','txt'];
+
+        function validarExtension(nombre) {
+            const partes = String(nombre || '').split('.');
+            const ext = partes.length > 1 ? partes.pop().toLowerCase() : '';
+            if (EXT_OK.includes(ext)) return null;
+            if (EXT_EXCEL.includes(ext)) {
+                return '<strong>' + escHtml(nombre) + '</strong> es un Excel, no un CSV.<br>Abrilo en Excel y hacé <em>Archivo → Guardar como → CSV (delimitado por comas)</em>. Después subí ese <code>.csv</code>.';
+            }
+            return 'Sólo se pueden subir archivos <strong>.csv</strong>. <strong>' + escHtml(nombre) + '</strong> es ' + (ext ? 'un <code>.' + escHtml(ext) + '</code>' : 'un archivo sin extensión') + '.';
+        }
+
+        // Un .xlsx renombrado a .csv sigue siendo un ZIP (arranca con "PK"), y
+        // un .xls viejo es OLE: leidos como texto quedan con bytes nulos.
+        function pareceBinario(texto) {
+            const m = texto.slice(0, 4000);
+            if (m.charCodeAt(0) === 0x50 && m.charCodeAt(1) === 0x4B) return true;   // PK -> zip/xlsx
+            if (m.indexOf('\u0000') !== -1) return true;
+            if (m.charCodeAt(0) === 0xD0 && m.charCodeAt(1) === 0xCF) return true;   // OLE -> xls viejo
+            return m.length > 0 && (m.match(/\ufffd/g) || []).length > m.length * 0.2;
+        }
+
+        function leerTexto(file, enc, onOk, onErr) {
+            const reader = new FileReader();
+            reader.onload = e => onOk(e.target.result);
+            reader.onerror = () => onErr();
+            reader.readAsText(file, enc);
+        }
+
         function handleFile(file) {
+            const problema = validarExtension(file.name);
+            if (problema) { mostrarErrorArchivo(problema); return; }
+            ocultarErrorArchivo();
             uploadArea.classList.add('hidden');
             loadingOverlay.classList.add('show');
-            const reader = new FileReader();
-            reader.onload = e => {
-                parseCSV(e.target.result);
-                // Se cuenta con la MISMA funcion que despues separa para
-                // exportar: si no, el numero que se muestra al cargar el
-                // archivo no coincide con las filas que salen en el CSV.
-                let totalPhones = 0;
-                rawData.forEach(row => {
-                    phoneColNames.forEach(col => {
-                        totalPhones += separarNumeros(row[col]).length;
-                    });
+            const falloLectura = () => fallarCarga('No se pudo leer <strong>' + escHtml(file.name) + '</strong>. Probá de nuevo.');
+            leerTexto(file, 'UTF-8', texto => {
+                if (pareceBinario(texto)) {
+                    fallarCarga('<strong>' + escHtml(file.name) + '</strong> termina en <code>.csv</code> pero por dentro es un Excel (u otro binario).<br>Volvé a guardarlo desde Excel como <em>CSV (delimitado por comas)</em>.');
+                    return;
+                }
+                // Excel en Windows guarda en ANSI: leido como UTF-8 los acentos
+                // salen rotos y "Panadería" llega al cliente como "Panader?a".
+                if (texto.indexOf('\ufffd') !== -1) {
+                    leerTexto(file, 'windows-1252', t2 => procesarTexto(file, t2), () => procesarTexto(file, texto));
+                } else {
+                    procesarTexto(file, texto);
+                }
+            }, falloLectura);
+        }
+
+        function procesarTexto(file, texto) {
+            const res = parseCSV(texto);
+            if (!res.ok) { fallarCarga(res.motivo); return; }
+            // Se cuenta con la MISMA funcion que despues separa para
+            // exportar: si no, el numero que se muestra al cargar el
+            // archivo no coincide con las filas que salen en el CSV.
+            let totalPhones = 0;
+            rawData.forEach(row => {
+                phoneColNames.forEach(col => {
+                    totalPhones += separarNumeros(row[col]).length;
                 });
-                setTimeout(() => {
-                    loadingOverlay.classList.remove('show');
-                    fileLoaded.classList.add('show');
-                    fileName.textContent = file.name;
-                    animateStats(rawData.length, totalPhones);
-                    enableSteps();
-                }, 400);
-            };
-            reader.readAsText(file, 'UTF-8');
+            });
+            if (!totalPhones) {
+                fallarCarga('El archivo se leyó bien, pero <code>' + escHtml(phoneColNames.join('</code>, <code>')) + '</code> no trae ningún teléfono.');
+                return;
+            }
+            setTimeout(() => {
+                loadingOverlay.classList.remove('show');
+                fileLoaded.classList.add('show');
+                fileName.textContent = file.name;
+                animateStats(rawData.length, totalPhones);
+                enableSteps();
+            }, 400);
+        }
+
+        // Un archivo que no sirve deja la app como estaba, con el cartel puesto:
+        // nunca a medias con datos viejos.
+        function fallarCarga(motivo) {
+            loadingOverlay.classList.remove('show');
+            resetFile();
+            mostrarErrorArchivo(motivo);
+        }
+
+        function mostrarErrorArchivo(motivo) {
+            uploadArea.classList.remove('hidden');
+            fileInput.value = '';
+            uploadError.innerHTML = '<span class="ue-tit">No se puede usar ese archivo</span>' + motivo;
+            uploadError.classList.add('show');
+            showToast('Ese archivo no se puede usar');
+        }
+
+        function ocultarErrorArchivo() {
+            uploadError.classList.remove('show');
+            uploadError.innerHTML = '';
         }
 
         function resetFile() {
             rawData = []; headers = []; extraCols = new Set();
+            phoneColNames = PHONE_COLS_DEFAULT.slice();
             selectedPhoneCols = new Set(phoneColNames); contactRows = [];
             exported = false; updateProgress();
             fileLoaded.classList.remove('show');
             uploadArea.classList.remove('hidden');
+            ocultarErrorArchivo();
             fileInput.value = '';
             ['step2','step3','step4','step5'].forEach(s => document.getElementById(s).classList.add('disabled'));
             phoneColsEl.innerHTML = '';
