@@ -31,15 +31,17 @@ function extraerConst(nombre) {
 }
 
 const FNS = ['parseCSVLine', 'detectarDelimitador', 'normNombreCol', 'detectarColumnasTelefono',
-  'parseCSV', 'normalizarNumero', 'separarNumeros', 'validarExtension', 'pareceBinario', 'escHtml'];
+  'detectarColumnaMensaje', 'parseCSV', 'normalizarNumero', 'separarNumeros', 'validarExtension',
+  'pareceBinario', 'escHtml', 'headersUnicos'];
 const codigo = [
   // stub minimo de DOM: escHtml usa document.createElement
   'const document = { createElement: () => ({ set textContent(v) { this._v = v; },'
   + ' get innerHTML() { return String(this._v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); } }) };',
-  'let headers = [], rawData = [], phoneColNames = [], selectedPhoneCols = new Set();',
-  extraerConst('PALABRAS_TEL'), extraerConst('EXT_EXCEL'), extraerConst('EXT_OK'),
+  'let headers = [], rawData = [], phoneColNames = [], selectedPhoneCols = new Set(), msgColName = "";',
+  extraerConst('PALABRAS_TEL'), extraerConst('PALABRAS_MSG'),
+  extraerConst('EXT_XLSX'), extraerConst('EXT_EXCEL'), extraerConst('EXT_OK'),
   ...FNS.map(extraerFn),
-  'module.exports = {' + FNS.join(',') + ', st: () => ({headers, rawData, phoneColNames})};',
+  'module.exports = {' + FNS.join(',') + ', st: () => ({headers, rawData, phoneColNames, msgColName})};',
 ].join('\n');
 const m = { exports: {} };
 new Function('module', codigo)(m);
@@ -55,8 +57,11 @@ console.log('--- 1. extension ---');
 t('.csv pasa', F.validarExtension('Informe de Cuentas.csv') === null);
 t('.CSV pasa', F.validarExtension('INFORME.CSV') === null);
 t('.txt pasa', F.validarExtension('x.txt') === null);
-t('.xlsx rebota con instruccion Excel', /Excel/.test(F.validarExtension('Informe.xlsx') || ''));
-t('.xls rebota', F.validarExtension('viejo.xls') !== null);
+t('.xlsx pasa (lo abre la pagina)', F.validarExtension('Informe.xlsx') === null);
+t('.XLSX pasa', F.validarExtension('INFORME.XLSX') === null);
+t('.xlsm pasa', F.validarExtension('macro.xlsm') === null);
+t('.xls (OLE viejo) rebota con instruccion', /Guardar como/.test(F.validarExtension('viejo.xls') || ''));
+t('.ods rebota', F.validarExtension('libre.ods') !== null);
 t('.pdf rebota', /\.pdf/.test(F.validarExtension('cosa.pdf') || ''));
 t('.png rebota', F.validarExtension('foto.png') !== null);
 t('sin extension rebota', /sin extensi/.test(F.validarExtension('archivo') || ''));
@@ -125,6 +130,40 @@ r = F.parseCSV(['Cuenta;Razon Social;Telefono_1;Telefono_2;$ Asig.',
   '1001;Ferreteria;2616414595;;15000'].join('\n'));
 t('regresion: Informe de Cuentas clasico', r.ok === true &&
   JSON.stringify(F.st().phoneColNames) === '["Telefono_1","Telefono_2"]', F.st().phoneColNames);
+
+console.log('--- 6. columna de mensaje ya escrito (amartin) ---');
+const conMsg = ['Cuenta;Telefono_1;Mensaje',
+  '1001;2616414595;Hola Juan, te escribimos por tu cuenta.',
+  '1002;2616414596;Hola Ana, pasamos a saludarte.'].join('\n');
+r = F.parseCSV(conMsg);
+t('csv con columna Mensaje se acepta', r.ok === true, r);
+t('detecta la columna Mensaje', F.st().msgColName === 'Mensaje', F.st().msgColName);
+
+r = F.parseCSV('Cuenta;Telefono_1;TEXTO\n1001;2616414595;Buenas, le escribimos de MAVERIX');
+t('tambien "TEXTO"', F.st().msgColName === 'TEXTO', F.st().msgColName);
+r = F.parseCSV('Cuenta;Telefono_1;mensaje_1\n1001;2616414595;Buenas, le escribimos de aca');
+t('tambien "mensaje_1"', F.st().msgColName === 'mensaje_1', F.st().msgColName);
+
+// Control: una columna que se llama parecido pero NO trae texto no cuenta
+r = F.parseCSV('Cuenta;Telefono_1;Mensajes enviados\n1001;2616414595;14');
+t('"Mensajes enviados" con numeros NO es la columna', F.st().msgColName === '', F.st().msgColName);
+r = F.parseCSV('Cuenta;Telefono_1;Mensaje\n1001;2616414595;');
+t('columna Mensaje vacia NO cuenta', F.st().msgColName === '', F.st().msgColName);
+r = F.parseCSV('Cuenta;Razon Social;Telefono_1\n1001;Ferreteria;2616414595');
+t('informe clasico: no hay columna de mensaje', F.st().msgColName === '', F.st().msgColName);
+
+console.log('--- 7. encabezados unicos en el CSV final ---');
+t('sin repetidos queda igual',
+  JSON.stringify(F.headersUnicos(['Telefono','Mensaje','Cuenta'])) === '["Telefono","Mensaje","Cuenta"]');
+t('Mensaje repetida pasa a Mensaje_2',
+  JSON.stringify(F.headersUnicos(['Telefono','Mensaje','Mensaje'])) === '["Telefono","Mensaje","Mensaje_2"]',
+  F.headersUnicos(['Telefono','Mensaje','Mensaje']));
+t('no distingue mayusculas',
+  JSON.stringify(F.headersUnicos(['Telefono','Mensaje','MENSAJE'])) === '["Telefono","Mensaje","MENSAJE_2"]',
+  F.headersUnicos(['Telefono','Mensaje','MENSAJE']));
+t('tres iguales: _2 y _3',
+  JSON.stringify(F.headersUnicos(['Mensaje','Mensaje','Mensaje'])) === '["Mensaje","Mensaje_2","Mensaje_3"]',
+  F.headersUnicos(['Mensaje','Mensaje','Mensaje']));
 
 console.log('\n' + ok + ' OK, ' + fail + ' fallas');
 process.exit(fail ? 1 : 0);

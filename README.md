@@ -1,6 +1,6 @@
 # Creador-Mensajes - MAVERIX
 
-App web para generar CSV de mensajes masivos a partir de un "Informe de Cuentas.csv".
+App web para generar CSV de mensajes masivos a partir de un "Informe de Cuentas" (`.csv` o `.xlsx`).
 Al abrir la página pide el **usuario del ejecutivo** (autocompletado sobre una lista fija en `index.html`); ese nombre queda registrado en cada ingreso, cada descarga y en la calificación de la encuesta. Incluye una encuesta de opinión **obligatoria antes de la primera descarga**, y un panel `/admin` para ver quién usa la página y las respuestas.
 
 **En vivo:** https://creador.fidelizador.online (panel en `/admin`) — dominio propio en Hostinger; el viejo `*.easypanel.host` fue borrado y da 404.
@@ -18,24 +18,50 @@ Al abrir la página pide el **usuario del ejecutivo** (autocompletado sobre una 
 
 1. **Al abrir la página**: modal "¿Qué ejecutivo sos?" con autocompletado sobre la lista fija (const `EJECUTIVOS` en `index.html`, 215 usuarios). Solo deja continuar con un nombre de la lista; queda en `localStorage` (`maverix_user`) y registra un evento `login`.
 2. La persona procesa su CSV y aprieta **«Descargar CSV»**.
-3. **Encuesta (una vez por ejecutivo)**: si ese ejecutivo nunca calificó, aparece el modal con estrellas + **comentario obligatorio** (mín. 3 letras). Se puede salir con "ahora no" (aborta esa descarga; la encuesta vuelve a aparecer en la próxima). Se guarda con el nombre del ejecutivo.
-4. **Modal de donación (en cada descarga)**: "MAVERIX es gratis — mantenerlo, no" + alias `palta.camote.mp` (click = copiar). Botón **«Continuar»** sigue al paso del nombre; «Cancelar» cierra sin descargar.
-5. **Nombre del archivo**: antes de que baje, un modal pregunta cómo llamarlo. Viene precargado con **`Maverix - mensaje AAAA-MM-DD`** (fecha ISO para que ordenen cronológico) y el texto queda seleccionado, así se puede tipear encima. El `.csv` va fijo al costado del campo: no se edita ni se duplica si el usuario lo escribe. Los caracteres que Windows no acepta (`\ / : * ? " < > |`) se cambian por `-` en vez de rechazar el nombre. Enter descarga, Escape / click afuera / «Cancelar» cierran sin descargar. Se registra un evento `download` con la cantidad de filas.
-6. En `/admin` (con clave): stats, tabla "quién usa la página" (click en una fila = detalle de cada ingreso/descarga con fecha-hora + sus calificaciones y comentarios) y lista completa de opiniones con `@usuario`.
+3. **Encuesta (una vez por ejecutivo)**: si ese ejecutivo nunca calificó, aparece el modal con estrellas (**obligatorias**) y comentario **opcional**. Se puede salir con "ahora no" (aborta esa descarga; la encuesta vuelve a aparecer en la próxima). Se guarda con el nombre del ejecutivo.
+4. **Un solo modal antes de que baje**: pide el **nombre del archivo**, y arriba muestra el bloque de donación (alias `palta.camote.mp`, click = copiar) **una vez por semana** por ejecutivo (`maverix_don_<user>`), no en cada descarga. Viene precargado con **`Maverix - mensaje AAAA-MM-DD`** (fecha ISO para que ordenen cronológico) y el texto queda seleccionado, así se puede tipear encima. El `.csv` va fijo al costado del campo: no se edita ni se duplica si el usuario lo escribe. Los caracteres que Windows no acepta (`\ / : * ? " < > |`) se cambian por `-` en vez de rechazar el nombre. Enter descarga, Escape / click afuera / «Cancelar» cierran sin descargar. Se registra un evento `download` con la cantidad de filas.
+5. En `/admin` (con clave): stats, tabla "quién usa la página" (click en una fila = detalle de cada ingreso/descarga con fecha-hora + sus calificaciones y comentarios) y lista completa de opiniones con `@usuario`.
+
+## Los tres pasos de la pantalla
+
+**1 Subí tu archivo · 2 Tu mensaje · 3 Descargá.** Las *columnas de teléfono* (dentro
+del paso 1) y las *columnas extra* (dentro del paso 3) son bloques **plegados**: los dos
+vienen resueltos de fábrica, y plegados muestran un resumen con exactamente lo que va a
+salir (`2 columnas · 495 teléfonos` / `ninguna`). Hasta 2026-09-01 eran los pasos 2 y 4,
+numerados: la pantalla mostraba cinco pasos para un trabajo de tres.
 
 ## El paso 1: qué archivo entra (y cuál no)
 
-**Sólo `.csv`** (se acepta `.txt`, que es lo mismo en texto plano). El `accept` del
-input **no filtra cuando se arrastra**, así que la validación vive en el JS y toda
-carga —arrastrada o elegida— pasa por las mismas tres puertas:
+**`.csv`, `.txt` y `.xlsx`/`.xlsm`.** El Excel se abre en la página, sin convertir nada
+(ver abajo). El `accept` del input **no filtra cuando se arrastra**, así que la
+validación vive en el JS y toda carga —arrastrada o elegida— pasa por las mismas
+tres puertas:
 
-1. **Extensión.** Si es un Excel (`.xlsx`, `.xls`, `.ods`…) el cartel dice cómo
-   arreglarlo: *Archivo → Guardar como → CSV (delimitado por comas)*.
-2. **Contenido binario.** Un `.xlsx` renombrado a `.csv` sigue siendo un ZIP (arranca
-   con `PK`) y un `.xls` viejo es OLE. La extensión miente; los primeros bytes no.
+1. **Extensión.** `.xls` (OLE viejo), `.xlsb`, `.ods` y `.numbers` siguen rebotando con
+   la instrucción de guardar como `.xlsx` o CSV.
+2. **Contenido binario.** Un `.xlsx` renombrado a `.csv` arranca con `PK`: se detecta y
+   **se abre como Excel** en vez de mandar a convertirlo. Un `.xls` viejo es OLE y rebota.
+   La extensión miente; los primeros bytes no.
 3. **CSV usable.** Sin filas, sin columnas separables o sin ninguna columna de
    teléfono → cartel rojo bajo el área de carga y la app queda **como estaba**,
    nunca "cargada" a medias con datos del archivo anterior.
+
+### Excel (`.xlsx`) sin convertir
+
+Un `.xlsx` es un ZIP con XML adentro, así que **no hace falta ninguna librería**: el
+navegador descomprime con `DecompressionStream('deflate-raw')` y parsea con `DOMParser`
+(`leerZip` / `inflar` / `hojaAFilas` en `index.html`). La hoja se convierte a CSV y entra
+**por el mismo camino que un archivo subido** (`procesarTexto`) — una sola vía, imposible
+de desincronizar. Detalles que importan:
+
+- **Las fechas se convierten.** Sin mirar `xl/styles.xml`, una columna `Fecha alta`
+  llegaría al cliente como `45678`. Se leen los `numFmtId` de fecha (de fábrica y
+  personalizados) y el serial se pasa a `dd/mm/yyyy`.
+- **Se lee la primera hoja del libro**, que no siempre es `sheet1.xml` (se resuelve por
+  `xl/_rels/workbook.xml.rels`).
+- **Las celdas traen su referencia** (`B4`), así que una columna vacía en el medio no
+  corre a las de la derecha.
+- Si algo falla, se cae al cartel de siempre: *guardalo como CSV*. Nunca queda a medias.
 
 **El separador se detecta solo** (`;`, `,`, tab o `|`; gana el que parta el encabezado
 en más columnas, con `;` ganando el empate). Si el CSV viene en ANSI de Excel se relee
@@ -50,20 +76,39 @@ entran únicamente si los datos traen un número real — así una columna `Tele
 que tiene nombres de personas, no se cuela y sigue disponible como variable
 `{Telefonista}` y como columna extra.
 
-Regresión: `node test-carga-csv.js` (51 casos, sin dependencias). Acepta un `index.html`
+Regresión: `node test-carga-csv.js` (65 casos, sin dependencias). Acepta un `index.html`
 por argumento para correrlo contra producción:
 
 ```bash
 curl -s https://creador.fidelizador.online/ > /tmp/prod.html && node test-carga-csv.js /tmp/prod.html
 ```
 
-## El paso 3: armar el mensaje
+## El paso 2: armar el mensaje
 
 - **Variables**: `{NombreColumna}` se reemplaza por el dato real de cada fila. `{$ Asig.}` y `{$ Hist.}` salen formateados como pesos argentinos. El panel de la derecha las inserta en la caja que se esté usando.
 - **Los saltos de línea se respetan** (desde 2026-08-21): lo que se escribe con Enter llega a WhatsApp con el mismo formato. Antes se aplastaban a un espacio y el mensaje salía como un chorizo de una sola línea. En el CSV el campo se entrecomilla **sólo** cuando tiene saltos; el de una línea sigue saliendo pelado para que ninguna herramienta le muestre comillas al cliente (ver `LECCIONES.md`).
 - **Varios mensajes**: el botón «Agregar otro mensaje» suma otra caja, con **Duplicar** y **Borrar**. Se rotan uno por contacto para que los envíos no salgan todos iguales (es lo que dispara los filtros de spam de WhatsApp). Cada caja tiene su propia vista previa con datos reales.
   - *Antes* las variantes se separaban con una línea de `---` dentro de una sola caja. Se sigue aceptando: si se escribe o pega un texto con `---`, se parte solo en cajas.
 - **No se puede descargar con el mensaje vacío**: antes el textarea vacío caía al texto del placeholder y se podía exportar el ejemplo como mensaje real.
+- **El mensaje se recuerda** por ejecutivo en `localStorage` (`maverix_msg_<user>`), y se
+  recupera al entrar. Antes no se guardaba nada y el que manda todos los días el mismo
+  texto lo retipeaba entero cada vez.
+
+### Usar el mensaje que ya trae el archivo
+
+Si el archivo trae una columna de mensaje (`Mensaje`, `TEXTO`, `mensaje_1`… detectada por
+nombre normalizado **y** con texto de verdad adentro), aparece una casilla para usarla en
+vez de la plantilla. Prendida:
+
+- las cajas de plantilla se **apagan, no se borran** (si la apaga, recupera lo escrito);
+- se muestra el mensaje real de la primera fila, que es lo que va a salir;
+- las filas **sin** mensaje no se exportan y se avisa cuántas son (HERMES abriría el chat
+  para no escribir nada).
+
+Y en el CSV final **nunca hay dos columnas con el mismo nombre** (`headersUnicos`): si el
+informe ya traía una `Mensaje` y además se marcaba como columna extra, salían dos y el
+`csv.DictReader` de HERMES se quedaba con **la última** — mandaba algo distinto de lo que
+mostraba la vista previa, en silencio. La segunda pasa a llamarse `Mensaje_2`.
 
 ## Diseño (tema MONOLITH, igual que HERMES)
 

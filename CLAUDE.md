@@ -6,7 +6,9 @@ Se carga solo al trabajar en este repo. Info general y accesos: `proyectos/Cread
 
 ## Qué es
 
-Herramienta web para los ejecutivos de MAVERIX: suben un CSV y les devuelve teléfonos `+549` con mensajes personalizados, listos para cargar en HERMES. Gate por ejecutivo (215 usuarios), encuesta por ejecutivo, panel de uso en `/admin`.
+Herramienta web para los ejecutivos de MAVERIX: suben un CSV **o un Excel** y les devuelve teléfonos `+549` con mensajes personalizados, listos para cargar en HERMES. Gate por ejecutivo (215 usuarios), encuesta por ejecutivo, panel de uso en `/admin`.
+
+La pantalla son **tres pasos** (archivo → mensaje → descargar). Las columnas de teléfono y las extra son bloques **plegados** dentro del paso 1 y del 3: hasta el 2026-09-01 eran los pasos 2 y 4 numerados.
 
 En producción: **https://creador.fidelizador.online**
 
@@ -58,7 +60,30 @@ Node puro (`http`/`fs`), sin dependencias npm. Imagen `node:20-alpine`, build de
    `ÐÏ` de un xls) → **CSV usable** (`parseCSV` devuelve `{ok, motivo}`). Si algo falla,
    `fallarCarga()` resetea y muestra el cartel: nunca queda "cargado" a medias.
 
-9. **Las columnas de teléfono se detectan, no se comparan literal.**
+9. **El `.xlsx` lo abre la propia página, sin librerías.**
+   `leerZip` (directorio central del ZIP) → `inflar` (`DecompressionStream('deflate-raw')`)
+   → `hojaAFilas` (DOMParser) → CSV → **`procesarTexto`, el mismo camino que un archivo
+   subido**. No agregar un segundo parser: se desincroniza.
+   - ⚠️ **Sin `xl/styles.xml` las fechas salen como número de serie** (`45678`) y eso le
+     llega al cliente. `estilosFecha()` mira los `numFmtId`; la señal confiable de que un
+     formato es fecha es la `y` o la `d`, no la `m` (`mm:ss` son minutos).
+   - Se lee la **primera hoja del libro** vía `xl/_rels/workbook.xml.rels`, no `sheet1.xml`
+     a ciegas. Las celdas se ubican por su referencia (`B4`), así una columna vacía en el
+     medio no corre a las de la derecha.
+   - Cualquier fallo cae a `fallarCarga` con el cartel de "guardalo como CSV". Un `.xlsx`
+     renombrado a `.csv` (arranca con `PK`) **se abre**, no se rechaza.
+   - `.xls`/`.xlsb`/`.ods` siguen rebotando: no son ZIP.
+
+10. **Si el archivo ya trae el mensaje escrito, se puede usar** (`useFileMsg`).
+   `detectarColumnaMensaje()` pide match fuerte de nombre **y** texto de verdad en los
+   datos. Con la casilla prendida `buildMessage()` toma `row[msgColName]`, las filas sin
+   mensaje **no se exportan**, y las cajas de plantilla se apagan sin borrarse.
+   - 🔴 **El CSV final nunca puede llevar dos columnas con el mismo nombre**
+     (`headersUnicos`). El `csv.DictReader` de HERMES se queda con la **última**: una
+     columna `Mensaje` marcada además como extra hacía que se enviara algo distinto de lo
+     que mostraba la vista previa, sin un solo aviso.
+
+11. **Las columnas de teléfono se detectan, no se comparan literal.**
    `phoneColNames` arranca en `Telefono_1..9` pero lo **reemplaza** lo que devuelve
    `detectarColumnasTelefono()` al leer el archivo: `TELEFONO 1`, `Teléfono1`, `Cel_2`
    y `Celular principal` valen igual. Las de match débil (empiezan con la palabra pero
@@ -69,7 +94,9 @@ Node puro (`http`/`fs`), sin dependencias npm. Imagen `node:20-alpine`, build de
 
 ## Cosas que se preguntan seguido
 
-- *"No me sale la encuesta"* → ese ejecutivo **ya calificó en ese navegador** (flag `maverix_fb_sent_<user>`). Es una vez por ejecutivo, a propósito.
+- *"No me sale la encuesta"* → ese ejecutivo **ya calificó en ese navegador** (flag `maverix_fb_sent_<user>`). Es una vez por ejecutivo, a propósito. Las estrellas son obligatorias; **el comentario NO** (era obligatorio hasta el 2026-09-01 y llenó el buzón de "...", "asd" y "ñññññ": 40 de 95).
+- *"No me pide más la donación"* → se muestra **una vez por semana** por ejecutivo (`maverix_don_<user>`), dentro del mismo modal del nombre del archivo. Antes eran dos ventanas en cada una de las ~400 descargas.
+- *"Se acordó de mi mensaje"* → sí: `maverix_msg_<user>` en `localStorage`. No viaja al servidor.
 - Agregar o sacar ejecutivos → editar `EJECUTIVOS` en `index.html` + redeploy.
 - El `ADMIN_KEY` se deja sin rotar a propósito: solo mide uso, no protege datos sensibles.
 

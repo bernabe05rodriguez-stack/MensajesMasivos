@@ -8,6 +8,57 @@
 ---
 
 
+### Lo que dice el buzón no es lo que dice el promedio (2026-09-01)
+
+127 opiniones, **4,92 estrellas**. Mirando de cerca: el comentario era **obligatorio**
+(mínimo 3 caracteres) *y* bloqueaba la descarga, así que 40 de los 95 comentarios son
+`...`, `asd`, `ñññññ` o chistes. El promedio no medía la herramienta, medía las ganas de
+que se cierre la ventana.
+
+- 📌 **Los 8 pedidos reales estaban en las notas más bajas y en los comentarios largos.**
+  Los dos únicos 3★ (amartin) eran un bug: no había forma de usar una columna `Mensaje`
+  que el ejecutivo ya traía armada. Un 5★ en mayúsculas ("DEMASIADOS PASOOOS BROO") vale
+  más que noventa "excelente".
+- 📌 **Obligar el comentario compra ruido, no señal.** Ahora las estrellas son
+  obligatorias y el texto no. Se pierde volumen y se gana que lo escrito sea de verdad.
+- La entrada permanente del footer ("Mejoras o sugerencias") es por donde llegaron los
+  pedidos buenos: la encuesta que bloquea la descarga se contesta una sola vez por
+  ejecutivo y después se apaga sola.
+
+### Dos columnas con el mismo nombre es peor que un error (2026-09-01)
+
+`exportCSV()` armaba el encabezado como `['Telefono','Mensaje', ...extras]`. Si el informe
+ya traía una columna llamada `Mensaje` y el ejecutivo la marcaba como extra, el CSV salía
+con **`Telefono;Mensaje;Mensaje`**. No falla nada: el `csv.DictReader` de HERMES se queda
+con la **última** y manda esa. La vista previa mostraba una cosa y el cliente recibía otra.
+
+- 📌 **Un duplicado no rompe: elige.** Y elige distinto en cada parser. `headersUnicos()`
+  renombra la segunda a `Mensaje_2` antes de escribir nada.
+- Lo mismo aplica a cualquier salida con encabezados: si el nombre lo pone el usuario,
+  la unicidad se garantiza en el serializador, no en la UI.
+
+### Un `.xlsx` es un ZIP: no hace falta una librería (2026-09-01)
+
+Pedido de fsevilla. Hasta hoy el Excel se rechazaba y **todos** los ejecutivos hacían
+"Guardar como CSV" a mano. El navegador ya trae todo: `DecompressionStream('deflate-raw')`
+para inflar y `DOMParser` para el XML. Unas 180 líneas, cero dependencias.
+
+- 🔴 **Sin leer `xl/styles.xml`, las fechas salen como número de serie.** Una columna
+  `Fecha alta` llegaba al cliente como `45678`. Hay que mirar el `numFmtId` de cada
+  estilo. La señal confiable de que un formato es fecha es la **`y`** o la **`d`**:
+  `mm:ss` son minutos, no una fecha.
+- **La primera hoja del libro no siempre es `sheet1.xml`.** Se resuelve por
+  `xl/_rels/workbook.xml.rels`; `sheet1.xml` queda de respaldo.
+- **El encabezado local del ZIP tiene su propio campo `extra`**, que casi nunca mide lo
+  mismo que el del directorio central. Usar el largo del directorio para saltear el
+  encabezado local da datos corridos y basura al inflar.
+- 📌 **Una sola vía de entrada.** La hoja se convierte a CSV y entra por `procesarTexto`,
+  el mismo camino que un archivo subido: las mismas validaciones, la misma detección de
+  columnas. Un segundo parser se desincroniza del primero apenas cambia una regla.
+- Se verificó con **Excel de verdad** (openpyxl) en el navegador, mirando el CSV que sale:
+  acentos, fechas `dd/mm/yyyy`, `261 641-4595` sin partirse por el guion y
+  `+5492615007788` sin doble prefijo.
+
 ### El `accept` del input NO existe cuando se arrastra (2026-08-31)
 
 - El `<input type="file" accept=".csv">` filtra **solo el diálogo de explorar archivos**.

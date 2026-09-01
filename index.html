@@ -470,6 +470,32 @@
         }
         .don-alias:hover { border-style: solid; }
         .don-copy { font-size: 0.72rem; color: var(--muted); font-weight: 400; white-space: nowrap; font-family: var(--sans); }
+        /* Interruptor "usar el mensaje del archivo" (pedido de amartin) */
+        .usefile { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 0 16px; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; }
+        .usefile-lbl { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.86rem; color: var(--ink); }
+        .usefile-lbl input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; flex: none; }
+        .usefile-lbl b { font-family: var(--mono); font-size: 0.8rem; color: var(--accent-text); }
+        .usefile-note { font-size: 0.78rem; color: var(--muted); }
+        .file-msg { margin: 0 0 16px; padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; font-size: 0.86rem; line-height: 1.6; color: var(--ink); white-space: pre-wrap; }
+        .file-msg .fm-tit { display: block; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+        .msg-area.off { opacity: 0.4; pointer-events: none; }
+        .msg-foot.off { opacity: 0.4; pointer-events: none; }
+        /* Ajustes plegables dentro de un paso. Antes eran dos pasos numerados
+           propios (2 y 4), pero los dos vienen resueltos de fábrica: la pantalla
+           mostraba cinco pasos para un trabajo de tres. */
+        .substep { margin-top: 20px; border-top: 1px solid var(--line); }
+        .substep.disabled { opacity: 0.45; pointer-events: none; }
+        .sub-head { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; padding: 14px 0 12px; cursor: pointer; text-align: left; font-family: var(--sans); font-size: 0.84rem; color: var(--muted); transition: color 0.2s; }
+        .sub-head:hover .sub-tit { color: var(--accent-text); }
+        .sub-tit { font-weight: 600; color: var(--ink); flex: none; }
+        .sub-sum { flex: 1; color: var(--muted); font-size: 0.8rem; }
+        .sub-caret { color: var(--faint); transition: transform 0.25s; flex: none; }
+        .substep.open .sub-caret { transform: rotate(180deg); }
+        .sub-body { display: none; padding-bottom: 8px; }
+        .substep.open .sub-body { display: block; }
+        .substep.just-enabled .sub-tit { color: var(--accent-text); }
+        .fb-opt { color: var(--faint); font-weight: 400; text-transform: none; letter-spacing: 0; }
+        .don-sep { height: 1px; background: var(--line); margin: 22px 0 20px; }
         .don-cancel { background: none; border: none; color: var(--faint); font-size: 0.8rem; cursor: pointer; padding: 10px 12px; transition: color 0.2s; font-family: var(--sans); }
         .don-cancel:hover { color: var(--muted); }
 
@@ -646,19 +672,15 @@
             <div class="pnode"></div>
             <div class="pbar"><span></span></div>
             <div class="pnode"></div>
-            <div class="pbar"><span></span></div>
-            <div class="pnode"></div>
-            <div class="pbar"><span></span></div>
-            <div class="pnode"></div>
         </div>
 
         <!-- STEP 1: Upload -->
         <div class="step" id="step1">
-            <h2><span class="step-num">1</span>Subí tu archivo CSV</h2>
+            <h2><span class="step-num">1</span>Subí tu archivo</h2>
             <div class="upload-area" id="uploadArea" tabindex="0" role="button">
-                <p class="up-prompt">Arrastrá <strong>Informe de Cuentas.csv</strong> acá, o <span class="act">explorá tus archivos</span></p>
-                <input type="file" id="fileInput" accept=".csv,.txt,text/csv">
-                <p class="up-note">Sólo <strong>.csv</strong>. Si tenés un Excel, guardalo como CSV antes de subirlo.</p>
+                <p class="up-prompt">Arrastrá tu <strong>Informe de Cuentas</strong> acá, o <span class="act">explorá tus archivos</span></p>
+                <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xlsm,text/csv">
+                <p class="up-note"><strong>.csv</strong> o <strong>.xlsx</strong> &mdash; el Excel se abre acá mismo, no hace falta convertirlo.</p>
             </div>
             <div class="upload-error" id="uploadError"></div>
             <!-- 10 de 36 ejecutivos entraron y se fueron sin descargar nada, y
@@ -678,48 +700,72 @@
                 </div>
                 <button class="btn-remove" id="btnRemoveFile">Cambiar</button>
             </div>
-        </div>
 
-        <!-- STEP 2: Phone columns -->
-        <div class="step disabled" id="step2">
-            <h2><span class="step-num">2</span>Columnas de teléfono</h2>
-            <div class="chip-group" id="phoneCols"></div>
+            <!-- Las columnas de teléfono son un detalle DEL ARCHIVO, y vienen
+                 bien detectadas solas: van plegadas acá en vez de ocupar un
+                 paso numerado propio. -->
+            <div class="substep disabled" id="step2">
+                <button class="sub-head" type="button" id="step2Head" aria-expanded="false" aria-controls="step2Body">
+                    <span class="sub-tit">Columnas de teléfono</span>
+                    <span class="sub-sum" id="step2Sum"></span>
+                    <span class="sub-caret" aria-hidden="true">&#9662;</span>
+                </button>
+                <div class="sub-body" id="step2Body">
+                    <div class="chip-group" id="phoneCols"></div>
+                </div>
+            </div>
         </div>
 
         <!-- STEP 3: Message template -->
         <div class="step disabled" id="step3">
-            <h2><span class="step-num">3</span>Tu mensaje personalizado</h2>
+            <h2><span class="step-num">2</span>Tu mensaje personalizado</h2>
             <p class="hint">
                 Usá <code>{NombreColumna}</code> para insertar datos. <code>{$ Asig.}</code> y <code>{$ Hist.}</code> se formatean como pesos.<br>
                 Los <strong>saltos de línea</strong> se respetan: el mensaje le llega a WhatsApp con el mismo formato que ves en la vista previa.<br>
                 ¿Querés variar el texto? Tocá <strong>«Agregar otro mensaje»</strong> y se van a ir <strong>rotando</strong> entre los contactos (así los envíos no salen todos iguales).
             </p>
-            <div class="msg-area">
+            <!-- Aparece solo si el archivo trae una columna con el mensaje ya escrito -->
+            <div class="usefile" id="useFileRow" style="display:none;">
+                <label class="usefile-lbl">
+                    <input type="checkbox" id="useFileChk">
+                    <span>Usar el mensaje que ya trae el archivo &mdash; columna <b id="useFileCol"></b></span>
+                </label>
+                <span class="usefile-note" id="useFileNote"></span>
+            </div>
+            <div class="file-msg" id="fileMsgPrev" style="display:none;"></div>
+            <div class="msg-area" id="msgArea">
                 <div class="msg-list" id="msgList"></div>
                 <div class="variables-panel" id="varsPanel">
                     <p>Variables</p>
                 </div>
             </div>
-            <div class="msg-foot">
+            <div class="msg-foot" id="msgFoot">
                 <button class="btn-add" id="btnAddMsg" type="button">+ Agregar otro mensaje</button>
                 <span class="msg-rot" id="msgRot"></span>
             </div>
         </div>
 
-        <!-- STEP 4: Extra columns -->
-        <div class="step disabled" id="step4">
-            <h2><span class="step-num">4</span>Columnas extra en el archivo</h2>
-            <p class="hint">El archivo siempre lleva <strong>Telefono</strong> y <strong>Mensaje</strong>. Sumá columnas extra si querés llevar más datos del informe.</p>
-            <div class="chip-group" id="extraColsChips"></div>
-        </div>
-
         <!-- STEP 5: Export -->
         <div class="step disabled" id="step5">
-            <h2><span class="step-num">5</span>Descargá tu archivo</h2>
+            <h2><span class="step-num">3</span>Descargá tu archivo</h2>
             <p class="hint">El CSV que baja se carga directo en <strong>HERMES</strong> con el botón <strong>«Cargar mensajes (MAVERIX)»</strong>.</p>
             <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
                 <button class="btn btn-export" id="btnExportCSV">Descargar CSV</button>
                 <div class="stats" id="exportStats"></div>
+            </div>
+
+            <!-- Las columnas extra son un detalle DEL ARCHIVO QUE BAJA: van acá,
+                 plegadas, en vez de ser un paso propio. Por defecto: ninguna. -->
+            <div class="substep disabled" id="step4">
+                <button class="sub-head" type="button" id="step4Head" aria-expanded="false" aria-controls="step4Body">
+                    <span class="sub-tit">Columnas extra</span>
+                    <span class="sub-sum" id="step4Sum"></span>
+                    <span class="sub-caret" aria-hidden="true">&#9662;</span>
+                </button>
+                <div class="sub-body" id="step4Body">
+                    <p class="hint">El archivo siempre lleva <strong>Telefono</strong> y <strong>Mensaje</strong>. Sumá columnas extra si querés llevar más datos del informe.</p>
+                    <div class="chip-group" id="extraColsChips"></div>
+                </div>
             </div>
         </div>
 
@@ -737,22 +783,17 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Donacion: antes de descargar -->
-    <div class="fb-overlay" id="donOverlay">
-        <div class="fb-modal" role="dialog" aria-modal="true">
-            <h3 style="letter-spacing:0.2px;">MAVERIX es <span style="color: var(--accent-text);font-weight:700;">gratis</span> &mdash; mantenerlo, <span style="color:var(--danger);font-weight:700;">no</span></h3>
-            <p class="fb-sub">Banc&aacute; donando lo que puedas al alias:</p>
-            <div class="don-alias" id="donAlias" tabindex="0" role="button">palta.camote.mp<span class="don-copy">Copiar</span></div>
-            <div class="fb-actions">
-                <button class="don-cancel" id="donCancel">Cancelar</button>
-                <button class="btn-send" id="donGo">Continuar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Nombre del archivo: ultimo paso antes de que baje -->
+    <!-- Ultimo paso antes de que baje: nombre del archivo (+ donacion 1 vez por
+         semana). Antes eran DOS ventanas seguidas en cada una de las ~400
+         descargas; ahora es una sola. -->
     <div class="fb-overlay" id="nameOverlay">
         <div class="fb-modal gate-modal" role="dialog" aria-modal="true">
+            <div id="donBlock">
+                <h3 style="letter-spacing:0.2px;">MAVERIX es <span style="color: var(--accent-text);font-weight:700;">gratis</span> &mdash; mantenerlo, <span style="color:var(--danger);font-weight:700;">no</span></h3>
+                <p class="fb-sub">Banc&aacute; donando lo que puedas al alias:</p>
+                <div class="don-alias" id="donAlias" tabindex="0" role="button">palta.camote.mp<span class="don-copy">Copiar</span></div>
+                <div class="don-sep"></div>
+            </div>
             <h3>&iquest;C&oacute;mo quer&eacute;s llamar al archivo?</h3>
             <p class="fb-sub">Pod&eacute;s dejar el nombre que viene o cambiarlo.</p>
             <div class="ac-wrap name-wrap">
@@ -794,19 +835,15 @@
                 </div>
                 <div class="tut-step">
                     <span class="step-num">2</span>
-                    <div><b>Eleg&iacute; los tel&eacute;fonos</b><p>Activ&aacute; o desactiv&aacute; las columnas <code>Telefono_1</code> a <code>Telefono_9</code>. Si <code>Telefono_1</code> trae varios n&uacute;meros unidos por <code>-</code>, se separan solos en filas distintas.</p></div>
+                    <div><b>Arm&aacute; el mensaje</b><p>Escribilo una sola vez usando variables: <code>{Razon Social}</code> se reemplaza por el dato real de cada fila. <code>{$ Asig.}</code> y <code>{$ Hist.}</code> salen formateados como pesos. Los saltos de l&iacute;nea se respetan tal cual los escribas. Si quer&eacute;s variar el texto, agreg&aacute; m&aacute;s mensajes y se van rotando entre los contactos. <b>Si tu archivo ya trae el mensaje escrito</b> en una columna, activ&aacute; la casilla de arriba y se usa ese.</p></div>
                 </div>
                 <div class="tut-step">
                     <span class="step-num">3</span>
-                    <div><b>Arm&aacute; el mensaje</b><p>Escribilo una sola vez usando variables: <code>{Razon Social}</code> se reemplaza por el dato real de cada fila. <code>{$ Asig.}</code> y <code>{$ Hist.}</code> salen formateados como pesos. Los saltos de l&iacute;nea se respetan tal cual los escribas. Si quer&eacute;s variar el texto, agreg&aacute; m&aacute;s mensajes y se van rotando entre los contactos. Abajo de cada caja ten&eacute;s la vista previa con datos reales.</p></div>
-                </div>
-                <div class="tut-step">
-                    <span class="step-num">4</span>
-                    <div><b>Sum&aacute; columnas extra</b><p>El archivo final siempre lleva <code>Telefono</code> y <code>Mensaje</code>. Si necesit&aacute;s llevar m&aacute;s datos del informe, marcalos ac&aacute;.</p></div>
-                </div>
-                <div class="tut-step">
-                    <span class="step-num">5</span>
                     <div><b>Descarg&aacute;</b><p>Obten&eacute;s un CSV con una fila por tel&eacute;fono, n&uacute;meros normalizados con <code>+549</code>, listo para cargar en HERMES con el bot&oacute;n <code>Cargar mensajes (MAVERIX)</code>.</p></div>
+                </div>
+                <div class="tut-step">
+                    <span class="step-num" style="visibility:hidden;">4</span>
+                    <div><b>Los ajustes est&aacute;n plegados</b><p>Las <b>columnas de tel&eacute;fono</b> (dentro del paso 1) y las <b>columnas extra</b> (dentro del paso 3) se detectan y resuelven solas. Toc&aacute; el t&iacute;tulo si quer&eacute;s cambiarlas: si <code>Telefono_1</code> trae varios n&uacute;meros unidos por <code>-</code> ya se separan en filas distintas.</p></div>
                 </div>
             </div>
             <p class="tut-note">Tus datos no salen de tu navegador: el archivo se procesa localmente y nunca se sube a un servidor.</p>
@@ -835,8 +872,8 @@
                     <span class="fb-word" id="fbWord"></span>
                 </div>
 
-                <div class="fb-label">Tu comentario</div>
-                <textarea id="fbText" placeholder="Qu&eacute; mejorar&iacute;as, qu&eacute; le falta o qu&eacute; te gust&oacute;..."></textarea>
+                <div class="fb-label">&iquest;Qu&eacute; le falta o qu&eacute; mejorar&iacute;as? <span class="fb-opt">(opcional)</span></div>
+                <textarea id="fbText" placeholder="Ej: &quot;quiero subir el Excel sin convertirlo&quot;, &quot;que recuerde mi mensaje&quot;..."></textarea>
 
                 <div class="fb-actions">
                     <button class="don-cancel" id="fbCancel" style="display:none;">Ahora no</button>
@@ -867,6 +904,10 @@
         let selectedPhoneCols = new Set(phoneColNames);
         let contactRows = [];
         let extraCols = new Set();
+        // Columna de mensaje ya escrito detectada en el archivo (o '') y si el
+        // ejecutivo eligio usarla en vez de la plantilla. Ver detectarColumnaMensaje.
+        let msgColName = '';
+        let useFileMsg = false;
         const moneyCols = ['$ Asig.', '$ Hist.'];
         let exported = false;
 
@@ -883,6 +924,13 @@
         const exportStats = document.getElementById('exportStats');
         const extraColsChips = document.getElementById('extraColsChips');
         const uploadError = document.getElementById('uploadError');
+        const useFileRow = document.getElementById('useFileRow');
+        const useFileChk = document.getElementById('useFileChk');
+        const useFileCol = document.getElementById('useFileCol');
+        const useFileNote = document.getElementById('useFileNote');
+        const fileMsgPrev = document.getElementById('fileMsgPrev');
+        const msgArea = document.getElementById('msgArea');
+        const msgFoot = document.getElementById('msgFoot');
 
         // ========== CSV PARSING ==========
         function parseCSVLine(line, delim) {
@@ -957,6 +1005,35 @@
             return salida;
         }
 
+        // ===== Columna de mensaje ya escrito =====
+        // Pedido de amartin (2026-08-31, los dos unicos 3 estrellas): "manten-
+        // dria la opcion de subir el archivo con el mensaje que ya he armado" /
+        // "no me respeta la columna de mensaje que agrego manualmente". Hasta
+        // hoy la columna Mensaje del CSV final SIEMPRE salia de la plantilla y
+        // no habia forma de usar una del archivo.
+        //
+        // Mismo criterio que los telefonos: match FUERTE (la columna ES la
+        // palabra, con o sin numero) y ademas tiene que traer texto de verdad —
+        // una columna "Mensajes enviados" con numeros adentro no es un mensaje.
+        const PALABRAS_MSG = ['mensajes','mensaje','textos','texto','messages','message','msg','sms','cuerpo'];
+
+        function detectarColumnaMensaje(hs, filas) {
+            for (let i = 0; i < hs.length; i++) {
+                const n = normNombreCol(hs[i]);
+                if (!n) continue;
+                const palabra = PALABRAS_MSG.find(p => n.startsWith(p));
+                if (!palabra) continue;
+                if (!/^\d*$/.test(n.slice(palabra.length))) continue;
+                // Con texto de verdad: mas de 3 caracteres y no un numero pelado.
+                const sirve = filas.some(r => {
+                    const v = String(r[hs[i]] || '').trim();
+                    return v.length > 3 && !/^[\d.,\s-]+$/.test(v);
+                });
+                if (sirve) return hs[i];
+            }
+            return '';
+        }
+
         // Devuelve {ok:true} o {ok:false, motivo:'<html para el cartel>'}.
         // Solo pisa headers/rawData/phoneColNames si el archivo sirve: un
         // archivo roto no puede dejar la app a medio cargar.
@@ -985,6 +1062,7 @@
             rawData = filas;
             phoneColNames = tels;
             selectedPhoneCols = new Set(tels);
+            msgColName = detectarColumnaMensaje(hs, filas);
             return { ok: true };
         }
 
@@ -996,11 +1074,10 @@
 
         // ========== PROGRESS BAR ==========
         function updateProgress() {
+            // Tres nodos, uno por paso visible: archivo → mensaje → descargado.
             const done = [
-                rawData.length > 0,
                 rawData.length > 0 && selectedPhoneCols.size > 0,
-                getTemplates().length > 0,
-                contactRows.length > 0 && getTemplates().length > 0,
+                contactRows.length > 0 && mensajeListo(),
                 exported,
             ];
             const nodes = document.querySelectorAll('#progress .pnode');
@@ -1058,17 +1135,20 @@
         // encontraba nada y la app quedaba "cargada" con 0 filas y sin decir
         // una palabra. Todo archivo pasa por estas tres puertas: extension,
         // contenido binario y CSV que se pueda usar.
-        const EXT_EXCEL = ['xlsx','xls','xlsm','xlsb','ods','numbers'];
+        // xlsx/xlsm los abre la propia pagina (ver leerXlsx). El resto de los
+        // formatos de planilla siguen rebotando con la instruccion de exportar.
+        const EXT_XLSX = ['xlsx','xlsm'];
+        const EXT_EXCEL = ['xls','xlsb','ods','numbers'];
         const EXT_OK = ['csv','txt'];
 
         function validarExtension(nombre) {
             const partes = String(nombre || '').split('.');
             const ext = partes.length > 1 ? partes.pop().toLowerCase() : '';
-            if (EXT_OK.includes(ext)) return null;
+            if (EXT_OK.includes(ext) || EXT_XLSX.includes(ext)) return null;
             if (EXT_EXCEL.includes(ext)) {
-                return '<strong>' + escHtml(nombre) + '</strong> es un Excel, no un CSV.<br>Abrilo en Excel y hacé <em>Archivo → Guardar como → CSV (delimitado por comas)</em>. Después subí ese <code>.csv</code>.';
+                return '<strong>' + escHtml(nombre) + '</strong> está en un formato de planilla que no se puede abrir acá.<br>Abrilo y hacé <em>Archivo → Guardar como</em> eligiendo <code>.xlsx</code> o <code>CSV (delimitado por comas)</code>.';
             }
-            return 'Sólo se pueden subir archivos <strong>.csv</strong>. <strong>' + escHtml(nombre) + '</strong> es ' + (ext ? 'un <code>.' + escHtml(ext) + '</code>' : 'un archivo sin extensión') + '.';
+            return 'Sólo se pueden subir archivos <strong>.csv</strong> o <strong>.xlsx</strong>. <strong>' + escHtml(nombre) + '</strong> es ' + (ext ? 'un <code>.' + escHtml(ext) + '</code>' : 'un archivo sin extensión') + '.';
         }
 
         // Un .xlsx renombrado a .csv sigue siendo un ZIP (arranca con "PK"), y
@@ -1081,6 +1161,213 @@
             return m.length > 0 && (m.match(/\ufffd/g) || []).length > m.length * 0.2;
         }
 
+        // ========== EXCEL (.xlsx / .xlsm) ==========
+        // Pedido de fsevilla (2026-09-01): "que se pueda con archivo de excel".
+        // Hasta hoy el .xlsx se rechazaba y TODOS los ejecutivos tenian que
+        // hacer "Guardar como CSV" a mano antes de subir.
+        //
+        // No hace falta ninguna libreria: un .xlsx es un ZIP con XML adentro, el
+        // navegador descomprime con DecompressionStream('deflate-raw') y parsea
+        // con DOMParser. La hoja se convierte a CSV y entra por el MISMO camino
+        // que un archivo subido (procesarTexto) — una sola via, imposible de
+        // desincronizar. Si algo falla se cae al cartel de "guardalo como CSV",
+        // que es exactamente lo que se hacia antes.
+        const XLSX_EPOCH = Date.UTC(1899, 11, 30);
+        const NUMFMT_FECHA = [14, 15, 16, 17, 18, 19, 20, 21, 22, 45, 46, 47];
+
+        function soportaXlsx() {
+            try { new DecompressionStream('deflate-raw'); return true; } catch (e) { return false; }
+        }
+
+        // Lector de ZIP minimo: solo lo que necesita un .xlsx (sin ZIP64 ni
+        // cifrado). Se lee el DIRECTORIO CENTRAL, que es la fuente de verdad.
+        function leerZip(buf) {
+            const dv = new DataView(buf), u8 = new Uint8Array(buf);
+            let eocd = -1;
+            const piso = Math.max(0, u8.length - 66000);
+            for (let i = u8.length - 22; i >= piso; i--) {
+                if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+            }
+            if (eocd < 0) throw new Error('no es un zip');
+            const total = dv.getUint16(eocd + 10, true);
+            let p = dv.getUint32(eocd + 16, true);
+            const dec = new TextDecoder('utf-8');
+            const salida = {};
+            for (let n = 0; n < total; n++) {
+                if (p + 46 > u8.length || dv.getUint32(p, true) !== 0x02014b50) break;
+                const metodo = dv.getUint16(p + 10, true);
+                const comprimido = dv.getUint32(p + 20, true);
+                const nameLen = dv.getUint16(p + 28, true);
+                const extraLen = dv.getUint16(p + 30, true);
+                const commLen = dv.getUint16(p + 32, true);
+                const offset = dv.getUint32(p + 42, true);
+                const nombre = dec.decode(u8.subarray(p + 46, p + 46 + nameLen));
+                // El encabezado local repite el nombre y trae SU PROPIO campo
+                // extra, que casi nunca mide lo mismo que el del directorio.
+                const lnLen = dv.getUint16(offset + 26, true);
+                const leLen = dv.getUint16(offset + 28, true);
+                const ini = offset + 30 + lnLen + leLen;
+                salida[nombre] = { metodo: metodo, datos: u8.subarray(ini, ini + comprimido) };
+                p += 46 + nameLen + extraLen + commLen;
+            }
+            return salida;
+        }
+
+        function inflar(entrada) {
+            if (!entrada) return Promise.resolve('');
+            if (entrada.metodo === 0) return Promise.resolve(new TextDecoder('utf-8').decode(entrada.datos));
+            if (entrada.metodo !== 8) return Promise.reject(new Error('compresion no soportada'));
+            const ds = new DecompressionStream('deflate-raw');
+            const w = ds.writable.getWriter();
+            w.write(entrada.datos);
+            w.close();
+            return new Response(ds.readable).text();
+        }
+
+        function xmlDoc(txt) { return new DOMParser().parseFromString(txt || '', 'application/xml'); }
+        function textoDe(nodo, tag) {
+            return Array.prototype.map.call(nodo.getElementsByTagName(tag), t => t.textContent).join('');
+        }
+
+        // Que estilos son fechas. Sin esto, "Fecha de alta" llega como 45678 y el
+        // cliente recibe un numero. La senal confiable es la 'y' o la 'd' del
+        // formato: "mm:ss" solo son minutos, no una fecha.
+        function estilosFecha(txt) {
+            const salida = [];
+            if (!txt) return salida;
+            const doc = xmlDoc(txt);
+            const custom = {};
+            Array.prototype.forEach.call(doc.getElementsByTagName('numFmt'), f => {
+                custom[f.getAttribute('numFmtId')] = f.getAttribute('formatCode') || '';
+            });
+            const xfs = doc.getElementsByTagName('cellXfs')[0];
+            if (!xfs) return salida;
+            Array.prototype.forEach.call(xfs.children, xf => {
+                const id = parseInt(xf.getAttribute('numFmtId') || '0', 10);
+                const code = (custom[String(id)] || '').replace(/\[[^\]]*\]/g, '').replace(/"[^"]*"/g, '');
+                salida.push(NUMFMT_FECHA.indexOf(id) !== -1 || /[yd]/i.test(code));
+            });
+            return salida;
+        }
+
+        function excelFecha(n, conHora) {
+            const d = new Date(XLSX_EPOCH + Math.round(n * 86400000));
+            if (isNaN(d.getTime())) return String(n);
+            const p = x => String(x).padStart(2, '0');
+            const base = p(d.getUTCDate()) + '/' + p(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear();
+            return conHora ? base + ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) : base;
+        }
+
+        function leerSharedStrings(txt) {
+            if (!txt) return [];
+            // Un <si> puede venir partido en varios <r><t>: se pegan en orden.
+            return Array.prototype.map.call(xmlDoc(txt).getElementsByTagName('si'), si => textoDe(si, 't'));
+        }
+
+        // "AB12" -> 27. Las celdas vienen con su referencia, asi que una columna
+        // vacia en el medio no corre a las de la derecha.
+        function colIndice(ref) {
+            let n = 0;
+            for (let i = 0; i < ref.length; i++) {
+                const c = ref.charCodeAt(i);
+                if (c < 65 || c > 90) break;
+                n = n * 26 + (c - 64);
+            }
+            return n - 1;
+        }
+
+        function hojaAFilas(txt, shared, fechas) {
+            const filas = [];
+            Array.prototype.forEach.call(xmlDoc(txt).getElementsByTagName('row'), row => {
+                const celdas = [];
+                Array.prototype.forEach.call(row.getElementsByTagName('c'), c => {
+                    const ref = c.getAttribute('r') || '';
+                    const idx = ref ? colIndice(ref) : celdas.length;
+                    const tipo = c.getAttribute('t') || 'n';
+                    let val = '';
+                    if (tipo === 'inlineStr') {
+                        const is = c.getElementsByTagName('is')[0];
+                        val = is ? textoDe(is, 't') : '';
+                    } else {
+                        const v = c.getElementsByTagName('v')[0];
+                        const crudo = v ? v.textContent : '';
+                        if (tipo === 's') val = shared[parseInt(crudo, 10)] || '';
+                        else if (tipo === 'b') val = crudo === '1' ? 'VERDADERO' : 'FALSO';
+                        else if (tipo === 'e' || crudo === '') val = '';
+                        else {
+                            const st = parseInt(c.getAttribute('s') || '-1', 10);
+                            const num = parseFloat(crudo);
+                            val = (fechas[st] && !isNaN(num) && num > 0)
+                                ? excelFecha(num, num % 1 !== 0)
+                                : crudo;
+                        }
+                    }
+                    if (idx < 0) return;
+                    while (celdas.length < idx) celdas.push('');
+                    celdas[idx] = val;
+                });
+                filas.push(celdas);
+            });
+            return filas;
+        }
+
+        // Se serializa con el MISMO formato que espera parseCSVLine (";" y
+        // comillas RFC 4180): asi el xlsx no tiene un parser propio que se
+        // pueda desincronizar del que usan los CSV.
+        function filasACsv(filas) {
+            return filas.map(f => f.map(v => {
+                const t = String(v == null ? '' : v);
+                return /[";\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+            }).join(';')).join('\n');
+        }
+
+        // La primera hoja del LIBRO, que no siempre es sheet1.xml.
+        function rutaPrimeraHoja(zip, wbXml, relsXml) {
+            try {
+                const hoja = xmlDoc(wbXml).getElementsByTagName('sheet')[0];
+                const rid = hoja && (hoja.getAttribute('r:id') || hoja.getAttribute('id'));
+                if (rid && relsXml) {
+                    const rel = Array.prototype.filter.call(
+                        xmlDoc(relsXml).getElementsByTagName('Relationship'),
+                        r => r.getAttribute('Id') === rid)[0];
+                    if (rel) {
+                        const t = (rel.getAttribute('Target') || '').replace(/^\/?xl\//, '').replace(/^\.\//, '');
+                        if (zip['xl/' + t]) return 'xl/' + t;
+                    }
+                }
+            } catch (e) {}
+            if (zip['xl/worksheets/sheet1.xml']) return 'xl/worksheets/sheet1.xml';
+            return Object.keys(zip).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort()[0] || '';
+        }
+
+        function leerXlsx(file) {
+            const nom = escHtml(file.name);
+            const rendirse = () => fallarCarga('No se pudo leer <strong>' + nom + '</strong> como Excel.<br>Si está protegido con contraseña o guardado en un formato viejo, abrilo y hacé <em>Archivo → Guardar como → CSV (delimitado por comas)</em>.');
+            const fr = new FileReader();
+            fr.onerror = rendirse;
+            fr.onload = ev => {
+                let zip;
+                try { zip = leerZip(ev.target.result); } catch (e) { rendirse(); return; }
+                Promise.all([
+                    inflar(zip['xl/workbook.xml']),
+                    inflar(zip['xl/_rels/workbook.xml.rels']),
+                    inflar(zip['xl/sharedStrings.xml']),
+                    inflar(zip['xl/styles.xml']),
+                ]).then(partes => {
+                    const ruta = rutaPrimeraHoja(zip, partes[0], partes[1]);
+                    if (!ruta) throw new Error('sin hoja');
+                    return inflar(zip[ruta]).then(hoja => {
+                        const filas = hojaAFilas(hoja, leerSharedStrings(partes[2]), estilosFecha(partes[3]));
+                        if (!filas.length) throw new Error('hoja vacia');
+                        // Entra por el mismo camino que un CSV: las mismas
+                        // validaciones, la misma deteccion de columnas.
+                        procesarTexto(file, filasACsv(filas));
+                    });
+                }).catch(rendirse);
+            };
+            fr.readAsArrayBuffer(file);
+        }
+
         function leerTexto(file, enc, onOk, onErr) {
             const reader = new FileReader();
             reader.onload = e => onOk(e.target.result);
@@ -1091,13 +1378,26 @@
         function handleFile(file) {
             const problema = validarExtension(file.name);
             if (problema) { mostrarErrorArchivo(problema); return; }
+            const esExcel = EXT_XLSX.some(e => file.name.toLowerCase().endsWith('.' + e));
+            if (esExcel && !soportaXlsx()) {
+                mostrarErrorArchivo('Este navegador no puede abrir archivos <strong>.xlsx</strong>.<br>Actualizá Chrome, o abrí el Excel y hacé <em>Archivo → Guardar como → CSV (delimitado por comas)</em>.');
+                return;
+            }
             ocultarErrorArchivo();
             uploadArea.classList.add('hidden');
             loadingOverlay.classList.add('show');
+            if (esExcel) { leerXlsx(file); return; }
             const falloLectura = () => fallarCarga('No se pudo leer <strong>' + escHtml(file.name) + '</strong>. Probá de nuevo.');
             leerTexto(file, 'UTF-8', texto => {
                 if (pareceBinario(texto)) {
-                    fallarCarga('<strong>' + escHtml(file.name) + '</strong> termina en <code>.csv</code> pero por dentro es un Excel (u otro binario).<br>Volvé a guardarlo desde Excel como <em>CSV (delimitado por comas)</em>.');
+                    // Un .xlsx renombrado a .csv es un xlsx perfectamente valido:
+                    // en vez de mandarlo a convertir, se abre. Los bytes mandan
+                    // sobre la extension, para bien y para mal.
+                    if (texto.charCodeAt(0) === 0x50 && texto.charCodeAt(1) === 0x4B && soportaXlsx()) {
+                        leerXlsx(file);
+                        return;
+                    }
+                    fallarCarga('<strong>' + escHtml(file.name) + '</strong> termina en <code>.csv</code> pero por dentro es otro formato (un Excel viejo u otro binario).<br>Volvé a guardarlo desde Excel como <em>CSV (delimitado por comas)</em> o como <code>.xlsx</code>.');
                     return;
                 }
                 // Excel en Windows guarda en ANSI: leido como UTF-8 los acentos
@@ -1158,6 +1458,8 @@
 
         function resetFile() {
             rawData = []; headers = []; extraCols = new Set();
+            msgColName = ''; useFileMsg = false; sinMensaje = 0;
+            pintarUseFile();
             phoneColNames = PHONE_COLS_DEFAULT.slice();
             selectedPhoneCols = new Set(phoneColNames); contactRows = [];
             exported = false; updateProgress();
@@ -1171,6 +1473,7 @@
             renderMessages();
             extraColsChips.innerHTML = '';
             exportStats.innerHTML = '';
+            pintarResumenes();
         }
 
         function enableSteps() {
@@ -1187,13 +1490,14 @@
             // nuevos quedan fuera de vista. Se respeta reduced-motion.
             const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             setTimeout(() => {
-                const s2 = document.getElementById('step2');
-                if (s2) s2.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'start' });
+                const s3 = document.getElementById('step3');
+                if (s3) s3.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'start' });
             }, 420);
             renderPhoneCols();
             renderVariables();
             buildContactRows();
             renderExtraColsChips();
+            pintarUseFile();
             updatePreview();
             updateProgress();
         }
@@ -1230,6 +1534,35 @@
             });
         }
 
+        // ========== AJUSTES PLEGABLES ==========
+        function armarPlegable(id) {
+            const cont = document.getElementById(id);
+            const head = document.getElementById(id + 'Head');
+            if (!cont || !head) return;
+            head.addEventListener('click', () => {
+                const abierto = cont.classList.toggle('open');
+                head.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+            });
+        }
+        armarPlegable('step2');
+        armarPlegable('step4');
+
+        // Plegado, el resumen es lo ÚNICO que se ve: tiene que decir exactamente
+        // lo que va a salir, o esconder el ajuste sería esconder el dato.
+        function pintarResumenes() {
+            const sum2 = document.getElementById('step2Sum');
+            if (sum2) {
+                const cols = phoneColNames.filter(c => selectedPhoneCols.has(c) && headers.includes(c));
+                sum2.textContent = rawData.length
+                    ? cols.length + (cols.length === 1 ? ' columna · ' : ' columnas · ') + contactRows.length + ' teléfonos'
+                    : '';
+            }
+            const sum4 = document.getElementById('step4Sum');
+            if (sum4) sum4.textContent = extraCols.size
+                ? extraCols.size + (extraCols.size === 1 ? ' columna' : ' columnas')
+                : 'ninguna';
+        }
+
         // ========== MENSAJES ==========
         // Antes las variantes se escribían todas en un mismo textarea separadas
         // por una línea de "---". Se descubría poco (una frase en el hint), sólo
@@ -1239,6 +1572,34 @@
         //
         // El "---" se sigue aceptando: si alguien pega un texto viejo que lo
         // usa, se parte solo en cajas y no pierde nada.
+        // Los mensajes se guardan POR EJECUTIVO en el navegador. Antes no se
+        // guardaba nada (solo el tema y el usuario) y el que manda todos los
+        // dias el mismo texto lo retipeaba entero cada vez — parte de lo que
+        // rrodriguez resumio como "DEMASIADOS PASOS, antes era mas simple"
+        // (2026-09-01). No viaja al servidor: es localStorage, igual que el tema.
+        function msgKey() { return 'maverix_msg_' + (currentUser || 'anon'); }
+
+        function guardarMensajes() {
+            try {
+                const vivos = messages.map(t => String(t)).filter(t => t.trim());
+                if (vivos.length) localStorage.setItem(msgKey(), JSON.stringify(vivos));
+                else localStorage.removeItem(msgKey());
+            } catch (e) {}
+        }
+
+        // Se llama cuando ya se sabe quien es el ejecutivo (al entrar y al
+        // cambiar de usuario). Si el de ahora ya venia escribiendo algo sin
+        // identificarse, no se le pisa.
+        function cargarMensajes() {
+            if (getTemplates().length) return;
+            let guardado = null;
+            try { guardado = JSON.parse(localStorage.getItem(msgKey()) || 'null'); } catch (e) {}
+            if (!Array.isArray(guardado) || !guardado.length) return;
+            messages = guardado.map(t => String(t));
+            renderMessages();
+            showToast('Recuperamos tu último mensaje');
+        }
+
         const MSG_SEP_RE = /^[ \t]*-{3,}[ \t]*$/m;
         const MSG_PLACEHOLDER = 'Hola {Razon Social}, te contactamos por tu cuenta {Cuenta}. Tu saldo es de {$ Asig.}. Contactanos para regularizar tu situación.';
         let messages = [''];
@@ -1268,6 +1629,7 @@
                 dup.type = 'button'; dup.className = 'mini-btn'; dup.textContent = 'Duplicar';
                 dup.addEventListener('click', () => {
                     messages.splice(i + 1, 0, messages[i]);
+                    guardarMensajes();
                     renderMessages(i + 1);
                 });
                 const del = document.createElement('button');
@@ -1275,6 +1637,7 @@
                 del.addEventListener('click', () => {
                     messages.splice(i, 1);
                     if (!messages.length) messages = [''];
+                    guardarMensajes();
                     renderMessages(Math.max(0, i - 1));
                 });
                 btns.appendChild(dup); btns.appendChild(del);
@@ -1290,12 +1653,14 @@
                         const parts = splitLegacy(ta.value);
                         if (parts.length > 1) {
                             messages.splice(i, 1, ...parts);
+                            guardarMensajes();
                             renderMessages(i + parts.length - 1);
                             showToast('Se separó en ' + parts.length + ' mensajes');
                             return;
                         }
                     }
                     messages[i] = ta.value;
+                    guardarMensajes();
                     updatePreview();
                 });
 
@@ -1326,6 +1691,35 @@
         });
 
         renderMessages();   // la primera caja existe desde que carga la página
+
+        // ========== USAR EL MENSAJE DEL ARCHIVO ==========
+        // El interruptor solo existe si el archivo trae una columna de mensaje.
+        // Prendido: las cajas de plantilla se apagan (no se borran: si lo apaga,
+        // recupera lo que habia escrito) y se muestra el mensaje real de la
+        // primera fila, que es lo que va a salir en el CSV.
+        function pintarUseFile() {
+            if (!useFileRow) return;
+            useFileRow.style.display = msgColName ? 'flex' : 'none';
+            useFileChk.checked = useFileMsg;
+            useFileCol.textContent = msgColName || '';
+            msgArea.classList.toggle('off', useFileMsg);
+            msgFoot.classList.toggle('off', useFileMsg);
+            useFileNote.textContent = (useFileMsg && sinMensaje)
+                ? sinMensaje + (sinMensaje === 1 ? ' fila del archivo no trae mensaje y no se exporta' : ' filas del archivo no traen mensaje y no se exportan')
+                : '';
+            if (!useFileMsg || !msgColName) { fileMsgPrev.style.display = 'none'; return; }
+            const fila = rawData.find(r => String(r[msgColName] || '').trim());
+            fileMsgPrev.style.display = 'block';
+            fileMsgPrev.innerHTML = '<span class="fm-tit">Así va a salir (primera fila con mensaje)</span>'
+                + (fila ? escHtml(buildMessage(fila, 0, [])) : 'La columna ' + escHtml(msgColName) + ' está vacía en todas las filas.');
+        }
+
+        if (useFileChk) useFileChk.addEventListener('change', () => {
+            useFileMsg = useFileChk.checked;
+            buildContactRows();      // recalcula descartando las filas sin mensaje
+            updatePreview();
+            pintarUseFile();
+        });
 
         // ========== VARIABLES ==========
         function renderVariables() {
@@ -1380,7 +1774,7 @@
                 });
             });
             const n = getTemplates().length;
-            msgRot.textContent = n > 1 ? '· Rotando entre ' + n + ' mensajes, uno por contacto' : '';
+            msgRot.textContent = (n > 1 && !useFileMsg) ? '· Rotando entre ' + n + ' mensajes, uno por contacto' : '';
             updateProgress();
         }
 
@@ -1423,9 +1817,16 @@
             return salida;
         }
 
+        let sinMensaje = 0;   // filas descartadas por no traer mensaje en la columna
+
         function buildContactRows() {
             contactRows = [];
+            sinMensaje = 0;
             rawData.forEach((row, rowIdx) => {
+                // Usando la columna del archivo, una fila sin mensaje no se
+                // exporta: HERMES la tomaria y abriria el chat para no escribir
+                // nada. Se cuentan aparte para avisarlo al lado del interruptor.
+                if (useFileMsg && !String(row[msgColName] || '').trim()) { sinMensaje++; return; }
                 selectedPhoneCols.forEach(col => {
                     const val = row[col];
                     if (!val || !val.trim()) return;
@@ -1442,15 +1843,18 @@
                 });
             });
             updateExportStats();
+            pintarUseFile();
         }
 
         function updateExportStats() {
             exportStats.innerHTML = `&rarr; <span>${contactRows.length}</span> filas a exportar`;
+            pintarResumenes();
             updateProgress();
         }
 
         // ========== EXTRA COLUMNS CHIPS (step 4) ==========
         function renderExtraColsChips() {
+            pintarResumenes();
             extraColsChips.innerHTML = '';
             const skip = new Set(phoneColNames);
             headers.forEach(col => {
@@ -1467,6 +1871,7 @@
                         extraCols.add(col);
                         chip.classList.add('active');
                     }
+                    pintarResumenes();
                 });
                 chip.addEventListener('keydown', e => {
                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.click(); }
@@ -1488,9 +1893,19 @@
             return messages.map(t => t.trim()).filter(Boolean);
         }
 
+        // Hay mensaje para exportar si el ejecutivo escribió una plantilla, O si
+        // eligió usar la columna que ya trae el archivo. Todo lo que antes
+        // preguntaba `getTemplates().length` pasa por acá.
+        function mensajeListo() {
+            return useFileMsg ? !!msgColName : getTemplates().length > 0;
+        }
+
         function buildMessage(row, idx, tpls) {
-            // Rota por posición del contacto: con 2 mensajes, uno y uno.
-            const tpl = tpls[(idx || 0) % tpls.length];
+            // Con la columna del archivo no hay rotación: cada fila ya trae el
+            // suyo. Las {Variables} se reemplazan igual, por si las dejó puestas.
+            const tpl = useFileMsg
+                ? String(row[msgColName] || '')
+                : tpls[(idx || 0) % tpls.length];
             return tpl.replace(/\{([^}]+)\}/g, (m, key) => {
                 if (row[key] === undefined) return m;
                 return moneyCols.includes(key) ? formatPeso(row[key]) : row[key];
@@ -1502,16 +1917,35 @@
         // y despues pasa por el modal de donacion en cada descarga.
         document.getElementById('btnExportCSV').addEventListener('click', () => {
             if (!contactRows.length) { showToast('No hay teléfonos para exportar'); return; }
-            if (!getTemplates().length) { showToast('Escribí el mensaje antes de descargar'); return; }
+            if (!mensajeListo()) { showToast('Escribí el mensaje antes de descargar'); return; }
             if (fbAlreadySent()) { openDonation(); return; }
             pendingExport = true;
             openFeedback(true);
         });
 
-        // ========== DONACION (antes de descargar) ==========
-        const donOverlay = document.getElementById('donOverlay');
+        // ========== ANTES DE DESCARGAR ==========
+        // La donacion se pide UNA VEZ POR SEMANA por ejecutivo, dentro del mismo
+        // modal del nombre. Pedirla en cada descarga (eran 2 ventanas por bajada)
+        // es parte de lo que se sentia como "demasiados pasos".
         const DON_ALIAS = 'palta.camote.mp';
-        function openDonation() { donOverlay.classList.add('show'); }
+        const DON_DIAS = 7;
+        const donBlock = document.getElementById('donBlock');
+
+        function donKey() { return 'maverix_don_' + (currentUser || 'anon'); }
+
+        function donToca() {
+            try {
+                const t = parseInt(localStorage.getItem(donKey()) || '0', 10);
+                return !(t > 0 && (Date.now() - t) < DON_DIAS * 86400000);
+            } catch (e) { return true; }
+        }
+
+        function openDonation() {
+            const pedir = donToca();
+            if (donBlock) donBlock.style.display = pedir ? '' : 'none';
+            if (pedir) { try { localStorage.setItem(donKey(), String(Date.now())); } catch (e) {} }
+            openFileName();
+        }
         document.getElementById('donAlias').addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); }
         });
@@ -1530,13 +1964,6 @@
                     done();
                 } catch (e) {}
             }
-        });
-        document.getElementById('donGo').addEventListener('click', () => {
-            donOverlay.classList.remove('show');
-            openFileName();
-        });
-        document.getElementById('donCancel').addEventListener('click', () => {
-            donOverlay.classList.remove('show');
         });
 
         // ========== NOMBRE DEL ARCHIVO (ultimo paso antes de descargar) ==========
@@ -1601,13 +2028,29 @@
             if (e.key === 'Escape' && nameOverlay.classList.contains('show')) closeFileName();
         });
 
+        // Dos columnas con el mismo nombre en el CSV son una trampa silenciosa:
+        // el csv.DictReader de HERMES se queda con la ULTIMA, asi que si el
+        // informe ya traia una columna "Mensaje" y ademas se marcaba como extra,
+        // se enviaba algo distinto de lo que mostraba la vista previa. La segunda
+        // pasa a llamarse "Mensaje_2".
+        function headersUnicos(nombres) {
+            const vistos = new Set(), salida = [];
+            nombres.forEach(n => {
+                let nombre = n, i = 2;
+                while (vistos.has(nombre.toLowerCase())) { nombre = n + '_' + (i++); }
+                vistos.add(nombre.toLowerCase());
+                salida.push(nombre);
+            });
+            return salida;
+        }
+
         function exportCSV(fileName) {
             if (!contactRows.length) { showToast('No hay teléfonos para exportar'); return; }
+            if (!mensajeListo()) { showToast('Escribí el mensaje antes de descargar'); return; }
             const tpls = getTemplates();
-            if (!tpls.length) { showToast('Escribí el mensaje antes de descargar'); return; }
             const sep = ';';
             const extraArr = headers.filter(h => extraCols.has(h));
-            const headerRow = ['Telefono', 'Mensaje', ...extraArr];
+            const headerRow = headersUnicos(['Telefono', 'Mensaje', ...extraArr]);
             const lines = [headerRow.map(csvField).join(sep)];
 
             contactRows.forEach((c, i) => {
@@ -1669,8 +2112,11 @@
             fbWord.textContent = fbRating ? RATING_WORDS[fbRating] : '';
             checkSend();
         }
+        // Antes el comentario era obligatorio (>=3 caracteres) Y bloqueaba la
+        // descarga: de 95 comentarios, ~40 son "...", "asd" o "ñññññ". Se pierde
+        // cantidad y se gana señal — las estrellas siguen siendo obligatorias.
         function checkSend() {
-            fbSend.disabled = fbRating === 0 || fbText.value.trim().length < 3;
+            fbSend.disabled = fbRating === 0;
         }
         fbText.addEventListener('input', checkSend);
         fbStars.querySelectorAll('.fb-star').forEach(s => {
@@ -1755,7 +2201,7 @@
         }
 
         fbSend.addEventListener('click', () => {
-            if (fbRating === 0 || fbText.value.trim().length < 3) return;
+            if (fbRating === 0) return;
             fbSend.disabled = true;
             // Timeout de 8s asi un backend colgado no atrapa al usuario
             const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -1941,6 +2387,7 @@
             try { localStorage.setItem('maverix_user', name); } catch (e) {}
             paintFooterUser();
             gateOverlay.classList.remove('show');
+            cargarMensajes();
             logUsage('login');
         }
 
