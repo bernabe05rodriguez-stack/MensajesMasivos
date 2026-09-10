@@ -18,8 +18,10 @@ En su lugar:
   Jockey Club Mendoza) durante 5 segundos con la cuenta regresiva visible; se cierra solo
   o con «Continuar»/Escape/clic afuera, y recién ahí pasa al modal del nombre del archivo.
   Nada más bloquea ni demora la descarga.
-- **Las sugerencias viven en un apartado grande al final de la página**, voluntario y
-  siempre visible. Manda al mismo `POST /api/feedback` pero **sin estrellas**: el server
+- **Las sugerencias viven en una pestaña fija al costado derecho** («✎ Sugerencias») que
+  abre un modal chico — el primer intento fue un apartado grande al pie de la página, pero
+  se confundía con el final del contenido. El cartel de la rifa **no se puede saltear**
+  (sin botón ni Escape): la publicidad se ve sí o sí. Manda al mismo `POST /api/feedback` pero **sin estrellas**: el server
   ahora acepta entradas solo-texto (`rating` quedó opcional) y el `/admin` las muestra
   como "sugerencia", calculando promedio y distribución sólo sobre las que tienen nota.
 

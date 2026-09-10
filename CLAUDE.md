@@ -6,7 +6,7 @@ Se carga solo al trabajar en este repo. Info general y accesos: `proyectos/Cread
 
 ## Qué es
 
-Herramienta web para los ejecutivos de MAVERIX: suben un CSV **o un Excel** y les devuelve teléfonos `+549` con mensajes personalizados, listos para cargar en HERMES. Gate por ejecutivo (215 usuarios), cartel de la rifa solidaria (7 segundos) antes de cada descarga, apartado de sugerencias en la página y panel de uso en `/admin`.
+Herramienta web para los ejecutivos de MAVERIX: suben un CSV **o un Excel** y les devuelve teléfonos `+549` con mensajes personalizados, listos para cargar en HERMES. Gate por ejecutivo (215 usuarios), cartel de la rifa solidaria (7 segundos, **sin saltearse**) antes de cada descarga, pestaña lateral de sugerencias y panel de uso en `/admin`.
 
 La pantalla son **tres pasos** (archivo → mensaje → descargar). Las columnas de teléfono y las extra son bloques **plegados** dentro del paso 1 y del 3: hasta el 2026-09-01 eran los pasos 2 y 4 numerados.
 
@@ -94,8 +94,8 @@ Node puro (`http`/`fs`), sin dependencias npm. Imagen `node:20-alpine`, build de
 
 ## Cosas que se preguntan seguido
 
-- *"Salió un cartel de una rifa al descargar"* → es a propósito: el afiche de la rifa solidaria (`rifa.jpeg`, Jockey Club Mendoza) se muestra 7 segundos con cuenta regresiva antes de pedir el nombre del archivo. Se cierra solo o con «Continuar»/Escape/clic afuera. Para cambiar el afiche: reemplazar `rifa.jpeg` y redeploy (está en el `COPY` del Dockerfile y lo sirve `server.js` en `/rifa.jpeg`).
-- *"¿Dónde quedó la encuesta?"* → se eliminó el 2026-09-10 junto con el pedido de donación. Ahora hay un apartado grande de sugerencias al final de la página (voluntario, solo texto, mismo `/api/feedback`; las entradas nuevas llegan **sin estrellas**, y el `/admin` las muestra como "sugerencia").
+- *"Salió un cartel de una rifa al descargar y no se puede cerrar"* → es a propósito: el afiche de la rifa solidaria (`rifa.jpeg`, Jockey Club Mendoza) se muestra 7 segundos con cuenta regresiva antes de pedir el nombre del archivo y **no tiene botón de salto** (2026-09-10: Berna pidió que la publicidad se vea sí o sí). Para cambiar el afiche: reemplazar `rifa.jpeg` y redeploy (está en el `COPY` del Dockerfile y lo sirve `server.js` en `/rifa.jpeg`).
+- *"¿Dónde quedó la encuesta?"* → se eliminó el 2026-09-10 junto con el pedido de donación. Ahora hay una pestaña fija al costado derecho («✎ Sugerencias») que abre un modal chico (voluntario, solo texto, mismo `/api/feedback`; las entradas nuevas llegan **sin estrellas**, y el `/admin` las muestra como "sugerencia").
 - *"Se acordó de mi mensaje"* → sí: `maverix_msg_<user>` en `localStorage`. No viaja al servidor.
 - Agregar o sacar ejecutivos → editar `EJECUTIVOS` en `index.html` + redeploy.
 - El `ADMIN_KEY` se deja sin rotar a propósito: solo mide uso, no protege datos sensibles.

@@ -417,17 +417,27 @@
         /* ===== Cartel de la rifa (antes de descargar) ===== */
         .rifa-modal { max-width: 600px; padding: 18px; }
         .rifa-img { display: block; width: 100%; max-height: 78vh; object-fit: contain; border-radius: var(--r-control); }
-        .rifa-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+        .rifa-foot { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; }
         .rifa-count { font-family: var(--mono); font-size: 0.84rem; color: var(--muted); }
 
-        /* ===== Apartado de sugerencias (página principal) ===== */
-        .sug-card textarea {
-            width: 100%; min-height: 110px; resize: vertical; background: var(--surface-2); color: var(--ink);
-            border: 1px solid var(--line); border-radius: var(--r-control); padding: 14px;
-            font-family: var(--sans); font-size: 0.94rem; line-height: 1.6;
+        /* ===== Sugerencias: pestaña fija al costado derecho ===== */
+        .sug-fab {
+            position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+            z-index: 150; writing-mode: vertical-rl;
+            background: var(--accent); color: var(--on-accent); border: none;
+            border-radius: var(--r-control) 0 0 var(--r-control);
+            padding: 16px 9px; cursor: pointer;
+            font-family: var(--sans); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.8px;
+            box-shadow: var(--shadow-lg); transition: background-color 0.2s var(--ease), padding 0.2s var(--ease);
         }
-        .sug-card textarea::placeholder { color: var(--faint); }
-        .sug-card textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); background: var(--surface); }
+        .sug-fab:hover { background: var(--accent-hover); padding-right: 13px; }
+        .sug-text {
+            width: 100%; min-height: 100px; resize: vertical; background: var(--surface-2); color: var(--ink);
+            border: 1px solid var(--line); border-radius: var(--r-control); padding: 13px;
+            font-family: var(--sans); font-size: 0.92rem; line-height: 1.6;
+        }
+        .sug-text::placeholder { color: var(--faint); }
+        .sug-text:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); background: var(--surface); }
         .sug-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
         .sug-user { font-size: 0.8rem; color: var(--muted); }
         .sug-user b { color: var(--accent-text); font-family: var(--mono); font-weight: 600; }
@@ -753,22 +763,6 @@
             </div>
         </div>
 
-        <!-- Sugerencias: la entrada permanente de ideas. Reemplaza a la vieja
-             encuesta que bloqueaba la primera descarga (eliminada 2026-09-10):
-             voluntario, grande y siempre visible. -->
-        <div class="step sug-card" id="sugerencias">
-            <h2><span class="step-num" style="background:var(--star);">&#9998;</span>Dejanos tu sugerencia</h2>
-            <p class="hint">¿Qué le falta a la herramienta? ¿Qué te molesta o qué mejorarías? Lo que escribas acá <strong>llega directo y se lee</strong> — de acá salieron el Excel sin convertir, la rotación de mensajes y el nombre del archivo.</p>
-            <div id="sugForm">
-                <textarea id="sugText" placeholder="Ej: &quot;quiero subir varios archivos juntos&quot;, &quot;que recuerde las columnas extra&quot;..." maxlength="2000"></textarea>
-                <div class="sug-actions">
-                    <span class="sug-user">Lo enviás como <b id="sugUserName">&mdash;</b></span>
-                    <button class="btn-send" id="sugSend">Enviar sugerencia</button>
-                </div>
-            </div>
-            <div class="sug-thanks" id="sugThanks" style="display:none;">✓ ¡Gracias! Tu sugerencia quedó registrada.</div>
-        </div>
-
         <div class="footer">
             <span>Hecho por <b>brodriguez</b></span>
             <span class="sep">·</span>
@@ -783,14 +777,36 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Cartel de la rifa solidaria: sale al tocar "Descargar CSV", con
-         cuenta regresiva de 5 segundos. Al cerrarse pasa al modal del nombre. -->
+    <!-- Sugerencias: una pestañita fija al costado derecho abre un modal
+         chico. Al pie de la página (donde estaba antes) se confundía con el
+         final del contenido. -->
+    <button class="sug-fab" id="sugFab" type="button" aria-label="Dejanos tu sugerencia">✎ Sugerencias</button>
+    <div class="fb-overlay" id="sugOverlay">
+        <div class="fb-modal gate-modal" role="dialog" aria-modal="true">
+            <h3>Dejanos tu sugerencia</h3>
+            <p class="fb-sub">¿Qué le falta a la herramienta o qué mejorarías? Llega directo y se lee.</p>
+            <div id="sugForm">
+                <textarea id="sugText" class="sug-text" placeholder="Ej: &quot;quiero subir varios archivos juntos&quot;, &quot;que recuerde las columnas extra&quot;..." maxlength="2000"></textarea>
+                <div class="sug-actions">
+                    <span class="sug-user">Lo enviás como <b id="sugUserName">&mdash;</b></span>
+                    <button class="btn-send" id="sugSend">Enviar</button>
+                </div>
+            </div>
+            <div class="sug-thanks" id="sugThanks" style="display:none;">✓ ¡Gracias! Tu sugerencia quedó registrada.</div>
+            <div class="fb-actions" style="margin-top:14px;">
+                <button class="don-cancel" id="sugClose">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cartel de la rifa solidaria: sale al tocar "Descargar CSV" y hay que
+         mirarlo los 7 segundos de la cuenta regresiva — no se puede saltear
+         (a propósito: es la publicidad). Al terminar pasa al modal del nombre. -->
     <div class="fb-overlay" id="rifaOverlay">
         <div class="fb-modal rifa-modal" role="dialog" aria-modal="true" aria-label="Rifa solidaria Con Futsal">
             <img src="/rifa.jpeg" class="rifa-img" alt="Rifa solidaria Con Futsal del Jockey Club Mendoza: 500 números a $5.000, se sortea el 20 de octubre. Alias: turquia.gc">
             <div class="rifa-foot">
                 <span class="rifa-count" id="rifaCount">Continuamos en 7&hellip;</span>
-                <button class="btn-send" id="rifaSkip">Continuar</button>
             </div>
         </div>
     </div>
@@ -1972,9 +1988,9 @@
 
         // ========== CARTEL DE LA RIFA (antes de elegir el nombre) ==========
         // Se muestra el afiche de la rifa solidaria 7 segundos con la cuenta
-        // regresiva visible; se puede cerrar antes con el botón, con Escape o
-        // con un clic afuera. Al cerrarse (solo o a mano) se pasa al modal del
-        // nombre, y de ahí se descarga.
+        // regresiva visible. NO se puede saltear (ni botón, ni Escape, ni clic
+        // afuera): es la publicidad y hay que verla. Al terminar sola, se pasa
+        // al modal del nombre, y de ahí se descarga.
         const rifaOverlay = document.getElementById('rifaOverlay');
         const rifaCount = document.getElementById('rifaCount');
         const RIFA_SEGUNDOS = 7;
@@ -1997,12 +2013,6 @@
             rifaOverlay.classList.remove('show');
             openFileName();
         }
-
-        document.getElementById('rifaSkip').addEventListener('click', closeRifa);
-        rifaOverlay.addEventListener('click', e => { if (e.target === rifaOverlay) closeRifa(); });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && rifaOverlay.classList.contains('show')) closeRifa();
-        });
 
         // ========== NOMBRE DEL ARCHIVO (ultimo paso antes de descargar) ==========
         // Pedido de Berna (2026-08-21): poder editar el nombre ANTES de que baje,
@@ -2133,11 +2143,13 @@
         // ========== SUGERENCIAS ==========
         // Reemplaza a la encuesta de estrellas que bloqueaba la primera
         // descarga (eliminada el 2026-09-10): obligar el comentario compraba
-        // ruido ("asd", "ñññññ"), no señal. Ahora es un apartado grande,
-        // voluntario y siempre visible en la página. Manda al mismo
+        // ruido ("asd", "ñññññ"), no señal. Ahora es una pestañita fija al
+        // costado derecho que abre un modal chico — el apartado grande al pie
+        // se confundía con el final de la página. Manda al mismo
         // /api/feedback de siempre, solo texto (sin estrellas).
         // Mismo criterio de resiliencia que la encuesta: timeout de 8s y si
         // el backend no responde se avisa, sin bloquear nada.
+        const sugOverlay = document.getElementById('sugOverlay');
         const sugForm = document.getElementById('sugForm');
         const sugText = document.getElementById('sugText');
         const sugSend = document.getElementById('sugSend');
@@ -2145,6 +2157,22 @@
         const sugUserName = document.getElementById('sugUserName');
 
         function pintarSugUser() { if (sugUserName) sugUserName.textContent = currentUser || '—'; }
+
+        function openSug() {
+            sugThanks.style.display = 'none';
+            sugForm.style.display = '';
+            sugSend.disabled = false;
+            sugText.value = '';
+            sugOverlay.classList.add('show');
+            setTimeout(() => sugText.focus(), 120);
+        }
+        function closeSug() { sugOverlay.classList.remove('show'); }
+        document.getElementById('sugFab').addEventListener('click', openSug);
+        document.getElementById('sugClose').addEventListener('click', closeSug);
+        sugOverlay.addEventListener('click', e => { if (e.target === sugOverlay) closeSug(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && sugOverlay.classList.contains('show')) closeSug();
+        });
 
         if (sugSend) sugSend.addEventListener('click', () => {
             const text = sugText.value.trim();
@@ -2163,6 +2191,7 @@
                 if (!r.ok) throw new Error('http ' + r.status);
                 sugForm.style.display = 'none';
                 sugThanks.style.display = 'block';
+                setTimeout(closeSug, 2200);
             }).catch(() => {
                 if (timer) clearTimeout(timer);
                 sugSend.disabled = false;
@@ -2170,16 +2199,9 @@
             });
         });
 
-        // El link del footer baja hasta el apartado y enfoca la caja.
+        // El link del footer abre el mismo modal.
         const footerFeedback = document.getElementById('footerFeedback');
-        if (footerFeedback) footerFeedback.addEventListener('click', e => {
-            e.preventDefault();
-            const s = document.getElementById('sugerencias');
-            if (!s) return;
-            const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            s.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'center' });
-            setTimeout(() => sugText.focus(), suave ? 500 : 0);
-        });
+        if (footerFeedback) footerFeedback.addEventListener('click', e => { e.preventDefault(); openSug(); });
 
         // ========== TUTORIAL ==========
         const tutOverlay = document.getElementById('tutOverlay');
