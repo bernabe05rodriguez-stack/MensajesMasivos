@@ -127,10 +127,15 @@ function handle(req, res) {
             let data;
             try { data = JSON.parse(body); } catch (e) { return sendJSON(res, 400, { error: 'JSON invalido' }); }
             const rating = parseInt(data.rating, 10);
-            if (!(rating >= 1 && rating <= 5)) return sendJSON(res, 400, { error: 'rating invalido' });
             const text = String(data.text || '').slice(0, 2000);
             const user = String(data.user || '').trim().toLowerCase().slice(0, 40);
-            const entry = { ts: new Date().toISOString(), rating: rating, text: text, user: user };
+            // Las estrellas son opcionales desde que la encuesta que bloqueaba
+            // la descarga se reemplazo por el apartado de sugerencias (texto
+            // solo). Tiene que venir algo: rating 1-5 o un texto no vacio.
+            const conRating = rating >= 1 && rating <= 5;
+            if (!conRating && !text.trim()) return sendJSON(res, 400, { error: 'nada para guardar' });
+            const entry = { ts: new Date().toISOString(), text: text, user: user };
+            if (conRating) entry.rating = rating;
             fs.appendFile(DATA_FILE, JSON.stringify(entry) + '\n', err => {
                 if (err) { console.error('Error guardando:', err.message); return sendJSON(res, 500, { error: 'no se pudo guardar' }); }
                 sendJSON(res, 200, { ok: true });
@@ -204,6 +209,7 @@ function handle(req, res) {
     if (pathname === '/favicon.ico' || pathname === '/favicon.png') return serveFile(res, 'favicon-256.png', 'image/png');
     if (pathname === '/apple-touch-icon.png' || pathname === '/apple-touch-icon-precomposed.png') return serveFile(res, 'favicon-256.png', 'image/png');
     if (pathname === '/og-image.png') return serveFile(res, 'og-image.png', 'image/png');
+    if (pathname === '/rifa.jpeg') return serveFile(res, 'rifa.jpeg', 'image/jpeg');
 
     // ---- Paginas ----
     if (pathname === '/admin' || pathname === '/admin.html') return serveFile(res, 'admin.html', 'text/html');

@@ -8,6 +8,45 @@
 ---
 
 
+### Afuera la encuesta y la donación; entra la rifa y el apartado de sugerencias (2026-09-10)
+
+Pedido de Berna: eliminar la encuesta de estrellas que bloqueaba la primera descarga,
+el pedido de donación (alias `palta.camote.mp`) y todo lo que molestaba en el flujo.
+En su lugar:
+
+- **Al tocar «Descargar CSV» se muestra el afiche de la rifa solidaria** (`rifa.jpeg`,
+  Jockey Club Mendoza) durante 5 segundos con la cuenta regresiva visible; se cierra solo
+  o con «Continuar»/Escape/clic afuera, y recién ahí pasa al modal del nombre del archivo.
+  Nada más bloquea ni demora la descarga.
+- **Las sugerencias viven en un apartado grande al final de la página**, voluntario y
+  siempre visible. Manda al mismo `POST /api/feedback` pero **sin estrellas**: el server
+  ahora acepta entradas solo-texto (`rating` quedó opcional) y el `/admin` las muestra
+  como "sugerencia", calculando promedio y distribución sólo sobre las que tienen nota.
+
+La misma revisión dejó varios arreglos de fondo:
+
+- 🔴 **El parser de CSV de entrada no leía lo que el writer escribe.** Se hacía
+  `text.split('\n')` antes de parsear: un campo entrecomillado con un salto adentro
+  (RFC 4180 — exactamente lo que generan `filasACsv` para el xlsx y el propio CSV
+  exportado) se partía en dos filas con las columnas corridas, en silencio. Ahora
+  `parseCSVTexto()` parsea el texto entero respetando las comillas; `parseCSVLine`
+  queda para una línea suelta. Regresión: casos nuevos en `test-carga-csv.js`.
+- **El nombre de una columna puede inyectar HTML.** El chip de `Telefono_N` armaba
+  `innerHTML` con el encabezado crudo del archivo. Va con `escHtml()`.
+- **Sólo se exportan números de 10 dígitos** (`numerosValidos()`): `459512` o un
+  dígito de más llegaban a HERMES como filas inválidas sin aviso. Los descartados
+  se cuentan y se muestran al lado del botón descargar, y `exportCSV` filtra de
+  nuevo como defensa final.
+- **`csvField()` normaliza `\r\n` → `\n`**: la regla "LF, nunca CRLF" también aplica
+  a las columnas extra.
+- **Encabezados duplicados en la entrada** (`Mensaje;Mensaje`): antes la segunda
+  columna pisaba a la primera en silencio; ahora se renombra con `headersUnicos()`
+  y se avisa con un toast.
+- Insertar variables desde el panel ahora persiste el mensaje (`guardarMensajes()`),
+  y el `URL.revokeObjectURL` espera un segundo después del click (Firefox viejo
+  cancelaba la descarga).
+
+
 ### Lo que dice el buzón no es lo que dice el promedio (2026-09-01)
 
 127 opiniones, **4,92 estrellas**. Mirando de cerca: el comentario era **obligatorio**

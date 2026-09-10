@@ -1,7 +1,7 @@
 # Creador-Mensajes - MAVERIX
 
 App web para generar CSV de mensajes masivos a partir de un "Informe de Cuentas" (`.csv` o `.xlsx`).
-Al abrir la página pide el **usuario del ejecutivo** (autocompletado sobre una lista fija en `index.html`); ese nombre queda registrado en cada ingreso, cada descarga y en la calificación de la encuesta. Incluye una encuesta de opinión **obligatoria antes de la primera descarga**, y un panel `/admin` para ver quién usa la página y las respuestas.
+Al abrir la página pide el **usuario del ejecutivo** (autocompletado sobre una lista fija en `index.html`); ese nombre queda registrado en cada ingreso y cada descarga. Al descargar se muestra un **cartel de la rifa solidaria** (5 segundos con cuenta regresiva) antes de pedir el nombre del archivo. Hay un apartado grande de **sugerencias** en la página principal (voluntario, siempre visible) y un panel `/admin` para ver quién usa la página y lo que escriben.
 
 **En vivo:** https://creador.fidelizador.online (panel en `/admin`) — dominio propio en Hostinger; el viejo `*.easypanel.host` fue borrado y da 404.
 
@@ -9,18 +9,20 @@ Al abrir la página pide el **usuario del ejecutivo** (autocompletado sobre una 
 
 ## Estructura
 
-- `index.html` — la app (subir CSV, armar mensaje/s, exportar) + modal de encuesta + tutorial "¿Cómo funciona?" (links en tagline y footer).
-- `admin.html` — panel `/admin` para ver las opiniones (protegido por clave).
+- `index.html` — la app (subir CSV, armar mensaje/s, exportar) + apartado de sugerencias + tutorial "¿Cómo funciona?" (links en tagline y footer).
+- `admin.html` — panel `/admin` para ver las opiniones y sugerencias (protegido por clave).
 - `server.js` — backend Node puro (sin dependencias): sirve las páginas y guarda/lee las opiniones. Rate limit y healthcheck incluidos.
+- `rifa.jpeg` — el afiche de la rifa solidaria que se muestra antes de cada descarga.
 - `Dockerfile` — para deploy en EasyPanel.
 
 ## Flujo de uso
 
 1. **Al abrir la página**: modal "¿Qué ejecutivo sos?" con autocompletado sobre la lista fija (const `EJECUTIVOS` en `index.html`, 215 usuarios). Solo deja continuar con un nombre de la lista; queda en `localStorage` (`maverix_user`) y registra un evento `login`.
 2. La persona procesa su CSV y aprieta **«Descargar CSV»**.
-3. **Encuesta (una vez por ejecutivo)**: si ese ejecutivo nunca calificó, aparece el modal con estrellas (**obligatorias**) y comentario **opcional**. Se puede salir con "ahora no" (aborta esa descarga; la encuesta vuelve a aparecer en la próxima). Se guarda con el nombre del ejecutivo.
-4. **Un solo modal antes de que baje**: pide el **nombre del archivo**, y arriba muestra el bloque de donación (alias `palta.camote.mp`, click = copiar) **una vez por semana** por ejecutivo (`maverix_don_<user>`), no en cada descarga. Viene precargado con **`Maverix - mensaje AAAA-MM-DD`** (fecha ISO para que ordenen cronológico) y el texto queda seleccionado, así se puede tipear encima. El `.csv` va fijo al costado del campo: no se edita ni se duplica si el usuario lo escribe. Los caracteres que Windows no acepta (`\ / : * ? " < > |`) se cambian por `-` en vez de rechazar el nombre. Enter descarga, Escape / click afuera / «Cancelar» cierran sin descargar. Se registra un evento `download` con la cantidad de filas.
-5. En `/admin` (con clave): stats, tabla "quién usa la página" (click en una fila = detalle de cada ingreso/descarga con fecha-hora + sus calificaciones y comentarios) y lista completa de opiniones con `@usuario`.
+3. **Cartel de la rifa**: se muestra el afiche `rifa.jpeg` durante **5 segundos** con la cuenta regresiva visible ("Continuamos en 5…"). Se puede cerrar antes con el botón «Continuar», con Escape o con un clic afuera. Al cerrarse, sigue el flujo.
+4. **Nombre del archivo**: viene precargado con **`Maverix - mensaje AAAA-MM-DD`** (fecha ISO para que ordenen cronológico) y el texto queda seleccionado, así se puede tipear encima. El `.csv` va fijo al costado del campo: no se edita ni se duplica si el usuario lo escribe. Los caracteres que Windows no acepta (`\ / : * ? " < > |`) se cambian por `-` en vez de rechazar el nombre. Enter descarga, Escape / click afuera / «Cancelar» cierran sin descargar. Se registra un evento `download` con la cantidad de filas.
+5. **Sugerencias**: apartado grande al final de la página (antes del footer). Voluntario, solo texto, se guarda con el nombre del ejecutivo en `/api/feedback`. El link "Mejoras o sugerencias" del footer baja hasta ahí. *(Hasta el 2026-09-10 había una encuesta de estrellas que bloqueaba la primera descarga y un pedido de donación semanal: se eliminaron los dos.)*
+6. En `/admin` (con clave): stats, tabla "quién usa la página" (click en una fila = detalle de cada ingreso/descarga con fecha-hora + sus calificaciones y comentarios) y lista completa de opiniones y sugerencias con `@usuario`.
 
 ## Los tres pasos de la pantalla
 
@@ -76,7 +78,7 @@ entran únicamente si los datos traen un número real — así una columna `Tele
 que tiene nombres de personas, no se cuela y sigue disponible como variable
 `{Telefonista}` y como columna extra.
 
-Regresión: `node test-carga-csv.js` (65 casos, sin dependencias). Acepta un `index.html`
+Regresión: `node test-carga-csv.js` (73 casos, sin dependencias). Acepta un `index.html`
 por argumento para correrlo contra producción:
 
 ```bash
@@ -122,7 +124,7 @@ Desde 2026-08-20 la app usa el **mismo sistema de diseño que la app de escritor
 
 | Endpoint | Qué hace |
 |----------|----------|
-| `POST /api/feedback` | Guarda una opinión (`rating`, `text`, `user`). Rate limit: 5 cada 10 minutos por IP. Body máximo 10KB (413 si se pasa). |
+| `POST /api/feedback` | Guarda una opinión o sugerencia (`text`, `user`; `rating` 1-5 opcional — desde 2026-09-10 las sugerencias llegan sin estrellas). Rate limit: 5 cada 10 minutos por IP. Body máximo 10KB (413 si se pasa). |
 | `GET /api/feedback?key=ADMIN_KEY` | Lee todas las opiniones (usado por `/admin`). |
 | `POST /api/usage` | Registra un evento de uso: `{user, event: "login"\|"download", rows?}`. Se guarda en `DATA_DIR/usage.jsonl`. Rate limit: 120 cada 10 min por IP. |
 | `GET /api/usage?key=ADMIN_KEY` | Lee todos los eventos de uso (usado por `/admin`). |

@@ -406,20 +406,6 @@
         .fb-overlay.show .fb-modal { transform: translateY(0); }
         .fb-modal h3 { font-family: var(--sans); color: var(--ink); font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; letter-spacing: -0.01em; }
         .fb-modal .fb-sub { color: var(--muted); font-size: 0.86rem; margin-bottom: 22px; line-height: 1.55; }
-        .fb-label { font-family: var(--sans); color: var(--muted); font-size: 0.8rem; font-weight: 600; margin-bottom: 9px; }
-        .fb-stars-row { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
-        .fb-stars { display: flex; gap: 6px; }
-        .fb-word { font-family: var(--sans); font-size: 0.82rem; color: var(--accent-text); font-weight: 500; min-height: 1em; }
-        .fb-star { font-size: 1.85rem; line-height: 1; cursor: pointer; color: var(--line-2); transition: color 0.15s, transform 0.15s; user-select: none; }
-        .fb-star:hover { transform: scale(1.15); }
-        .fb-star.on { color: var(--star); }
-        .fb-modal textarea {
-            width: 100%; min-height: 88px; resize: vertical; background: var(--surface-2); color: var(--ink);
-            border: 1px solid var(--line); border-radius: var(--r-control); padding: 12px; font-family: var(--sans); font-size: 0.9rem;
-            margin-bottom: 22px;
-        }
-        .fb-modal textarea::placeholder { color: var(--faint); }
-        .fb-modal textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
         .fb-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
         .btn-send {
             font-family: var(--sans); background: var(--accent); color: var(--on-accent); padding: 11px 24px; border: none; border-radius: var(--r-control);
@@ -427,9 +413,25 @@
         }
         .btn-send:hover { background: var(--accent-hover); }
         .btn-send:disabled { opacity: 0.45; cursor: not-allowed; }
-        .fb-thanks { text-align: center; padding: 16px 0 4px; }
-        .fb-thanks .fb-check { font-family: var(--sans); font-size: 2rem; color: var(--accent-text); margin-bottom: 10px; }
-        .fb-thanks h3 { font-family: var(--sans); margin-bottom: 6px; color: var(--ink); }
+
+        /* ===== Cartel de la rifa (antes de descargar) ===== */
+        .rifa-modal { max-width: 430px; padding: 16px; }
+        .rifa-img { display: block; width: 100%; max-height: 66vh; object-fit: contain; border-radius: var(--r-control); }
+        .rifa-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+        .rifa-count { font-family: var(--mono); font-size: 0.84rem; color: var(--muted); }
+
+        /* ===== Apartado de sugerencias (página principal) ===== */
+        .sug-card textarea {
+            width: 100%; min-height: 110px; resize: vertical; background: var(--surface-2); color: var(--ink);
+            border: 1px solid var(--line); border-radius: var(--r-control); padding: 14px;
+            font-family: var(--sans); font-size: 0.94rem; line-height: 1.6;
+        }
+        .sug-card textarea::placeholder { color: var(--faint); }
+        .sug-card textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); background: var(--surface); }
+        .sug-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+        .sug-user { font-size: 0.8rem; color: var(--muted); }
+        .sug-user b { color: var(--accent-text); font-family: var(--mono); font-weight: 600; }
+        .sug-thanks { padding: 18px; text-align: center; color: var(--accent-text); font-weight: 600; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: var(--r-control); }
 
         /* ===== Gate de ejecutivo (quien usa la pagina) ===== */
         .gate-modal { max-width: 420px; }
@@ -460,16 +462,6 @@
             font-family: var(--mono); font-size: 0.86rem; color: var(--faint); pointer-events: none;
         }
 
-        /* ===== Donacion (antes de descargar) ===== */
-        .don-alias {
-            font-family: var(--mono); font-size: 1.1rem; font-weight: 600; color: var(--accent-text);
-            background: var(--accent-dim); border: 1px dashed var(--accent); border-radius: var(--r-control);
-            padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between;
-            align-items: center; gap: 10px; letter-spacing: 0.5px; transition: all 0.2s; user-select: all;
-            margin-bottom: 24px;
-        }
-        .don-alias:hover { border-style: solid; }
-        .don-copy { font-size: 0.72rem; color: var(--muted); font-weight: 400; white-space: nowrap; font-family: var(--sans); }
         /* Interruptor "usar el mensaje del archivo" (pedido de amartin) */
         .usefile { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 0 0 16px; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; }
         .usefile-lbl { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.86rem; color: var(--ink); }
@@ -494,8 +486,6 @@
         .sub-body { display: none; padding-bottom: 8px; }
         .substep.open .sub-body { display: block; }
         .substep.just-enabled .sub-tit { color: var(--accent-text); }
-        .fb-opt { color: var(--faint); font-weight: 400; text-transform: none; letter-spacing: 0; }
-        .don-sep { height: 1px; background: var(--line); margin: 22px 0 20px; }
         .don-cancel { background: none; border: none; color: var(--faint); font-size: 0.8rem; cursor: pointer; padding: 10px 12px; transition: color 0.2s; font-family: var(--sans); }
         .don-cancel:hover { color: var(--muted); }
 
@@ -573,17 +563,11 @@
 
         /* Modales: entran desde abajo con un leve zoom en vez de aparecer. */
         .fb-overlay { transition: opacity 0.28s var(--ease), visibility 0.28s var(--ease); }
-        .fb-modal, .don-modal {
+        .fb-modal {
             transform: translateY(14px) scale(0.97);
             transition: transform 0.34s var(--ease), opacity 0.34s var(--ease);
         }
-        .fb-overlay.show .fb-modal, .fb-overlay.show .don-modal { transform: translateY(0) scale(1); }
-
-        /* Estrellas de la encuesta: crecen al pasar el mouse y al elegirlas. */
-        .fb-star { transition: transform 0.18s var(--ease), color 0.18s var(--ease); }
-        .fb-star:hover { transform: scale(1.18); }
-        .fb-star.on { animation: starPop 0.32s var(--ease); }
-        @keyframes starPop { 0% { transform: scale(1); } 45% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .fb-overlay.show .fb-modal { transform: translateY(0) scale(1); }
 
         /* El toast entra y sale deslizándose. */
         .toast { transition: transform 0.32s var(--ease), opacity 0.32s var(--ease); }
@@ -769,6 +753,22 @@
             </div>
         </div>
 
+        <!-- Sugerencias: la entrada permanente de ideas. Reemplaza a la vieja
+             encuesta que bloqueaba la primera descarga (eliminada 2026-09-10):
+             voluntario, grande y siempre visible. -->
+        <div class="step sug-card" id="sugerencias">
+            <h2><span class="step-num" style="background:var(--star);">&#9998;</span>Dejanos tu sugerencia</h2>
+            <p class="hint">¿Qué le falta a la herramienta? ¿Qué te molesta o qué mejorarías? Lo que escribas acá <strong>llega directo y se lee</strong> — de acá salieron el Excel sin convertir, la rotación de mensajes y el nombre del archivo.</p>
+            <div id="sugForm">
+                <textarea id="sugText" placeholder="Ej: &quot;quiero subir varios archivos juntos&quot;, &quot;que recuerde las columnas extra&quot;..." maxlength="2000"></textarea>
+                <div class="sug-actions">
+                    <span class="sug-user">Lo enviás como <b id="sugUserName">&mdash;</b></span>
+                    <button class="btn-send" id="sugSend">Enviar sugerencia</button>
+                </div>
+            </div>
+            <div class="sug-thanks" id="sugThanks" style="display:none;">✓ ¡Gracias! Tu sugerencia quedó registrada.</div>
+        </div>
+
         <div class="footer">
             <span>Hecho por <b>brodriguez</b></span>
             <span class="sep">·</span>
@@ -783,17 +783,21 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Ultimo paso antes de que baje: nombre del archivo (+ donacion 1 vez por
-         semana). Antes eran DOS ventanas seguidas en cada una de las ~400
-         descargas; ahora es una sola. -->
+    <!-- Cartel de la rifa solidaria: sale al tocar "Descargar CSV", con
+         cuenta regresiva de 5 segundos. Al cerrarse pasa al modal del nombre. -->
+    <div class="fb-overlay" id="rifaOverlay">
+        <div class="fb-modal rifa-modal" role="dialog" aria-modal="true" aria-label="Rifa solidaria Con Futsal">
+            <img src="/rifa.jpeg" class="rifa-img" alt="Rifa solidaria Con Futsal del Jockey Club Mendoza: 500 números a $5.000, se sortea el 20 de octubre. Alias: turquia.gc">
+            <div class="rifa-foot">
+                <span class="rifa-count" id="rifaCount">Continuamos en 5&hellip;</span>
+                <button class="btn-send" id="rifaSkip">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ultimo paso antes de que baje: el nombre del archivo. -->
     <div class="fb-overlay" id="nameOverlay">
         <div class="fb-modal gate-modal" role="dialog" aria-modal="true">
-            <div id="donBlock">
-                <h3 style="letter-spacing:0.2px;">MAVERIX es <span style="color: var(--accent-text);font-weight:700;">gratis</span> &mdash; mantenerlo, <span style="color:var(--danger);font-weight:700;">no</span></h3>
-                <p class="fb-sub">Banc&aacute; donando lo que puedas al alias:</p>
-                <div class="don-alias" id="donAlias" tabindex="0" role="button">palta.camote.mp<span class="don-copy">Copiar</span></div>
-                <div class="don-sep"></div>
-            </div>
             <h3>&iquest;C&oacute;mo quer&eacute;s llamar al archivo?</h3>
             <p class="fb-sub">Pod&eacute;s dejar el nombre que viene o cambiarlo.</p>
             <div class="ac-wrap name-wrap">
@@ -849,41 +853,6 @@
             <p class="tut-note">Tus datos no salen de tu navegador: el archivo se procesa localmente y nunca se sube a un servidor.</p>
             <div class="fb-actions">
                 <button class="btn-send" id="tutClose">Entendido</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Feedback modal -->
-    <div class="fb-overlay" id="fbOverlay">
-        <div class="fb-modal" role="dialog" aria-modal="true">
-            <div id="fbForm">
-                <h3>&iquest;Qu&eacute; te pareci&oacute;?</h3>
-                <p class="fb-sub" id="fbSub">Tu opini&oacute;n ayuda a mejorar la herramienta. Te lleva unos segundos.</p>
-
-                <div class="fb-label">&iquest;Qu&eacute; tan &uacute;til te result&oacute;?</div>
-                <div class="fb-stars-row">
-                    <div class="fb-stars" id="fbStars">
-                        <span class="fb-star" data-val="1" tabindex="0">&#9733;</span>
-                        <span class="fb-star" data-val="2" tabindex="0">&#9733;</span>
-                        <span class="fb-star" data-val="3" tabindex="0">&#9733;</span>
-                        <span class="fb-star" data-val="4" tabindex="0">&#9733;</span>
-                        <span class="fb-star" data-val="5" tabindex="0">&#9733;</span>
-                    </div>
-                    <span class="fb-word" id="fbWord"></span>
-                </div>
-
-                <div class="fb-label">&iquest;Qu&eacute; le falta o qu&eacute; mejorar&iacute;as? <span class="fb-opt">(opcional)</span></div>
-                <textarea id="fbText" placeholder="Ej: &quot;quiero subir el Excel sin convertirlo&quot;, &quot;que recuerde mi mensaje&quot;..."></textarea>
-
-                <div class="fb-actions">
-                    <button class="don-cancel" id="fbCancel" style="display:none;">Ahora no</button>
-                    <button class="btn-send" id="fbSend" disabled>Enviar</button>
-                </div>
-            </div>
-            <div class="fb-thanks" id="fbThanks" style="display:none;">
-                <div class="fb-check">✓</div>
-                <h3>&iexcl;Gracias!</h3>
-                <p class="fb-sub" style="margin-bottom:0;">Tu opini&oacute;n fue registrada.</p>
             </div>
         </div>
     </div>
@@ -953,6 +922,43 @@
             }
             result.push(current.trim());
             return result;
+        }
+
+        // Parsea el texto ENTERO respetando los campos entrecomillados de RFC
+        // 4180, incluidos los que traen saltos de línea adentro. Antes se
+        // hacia text.split('\n') y despues parseCSVLine por línea: un campo
+        // con un salto entre comillas se partía en dos "filas" con las
+        // columnas corridas y los datos sobrantes se descartaban en silencio.
+        // Peor: el PROPIO serializador del xlsx (filasACsv) y el CSV que
+        // exporta la app generan esos campos — el parser no leía lo que el
+        // writer escribe. Las líneas vacías se saltan, como antes.
+        function parseCSVTexto(text, delim) {
+            const d = delim || ';';
+            const rows = [];
+            let row = [], current = '', inQuotes = false;
+            const cerrarFila = () => {
+                row.push(current.trim()); current = '';
+                if (row.length > 1 || row[0] !== '') rows.push(row);
+                row = [];
+            };
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                if (inQuotes) {
+                    if (ch === '"') {
+                        if (text[i + 1] === '"') { current += '"'; i++; }
+                        else inQuotes = false;
+                    } else current += ch;   // acá entran también \n y \r
+                } else if (ch === '"') {
+                    inQuotes = true;
+                } else if (ch === d) {
+                    row.push(current.trim()); current = '';
+                } else if (ch === '\n' || ch === '\r') {
+                    if (ch === '\r' && text[i + 1] === '\n') i++;   // CRLF
+                    cerrarFila();
+                } else current += ch;
+            }
+            cerrarFila();
+            return rows;
         }
 
         // El Informe de Cuentas viene con ";", pero un CSV guardado en otra
@@ -1038,18 +1044,28 @@
         // Solo pisa headers/rawData/phoneColNames si el archivo sirve: un
         // archivo roto no puede dejar la app a medio cargar.
         function parseCSV(text) {
-            const lines = text.split('\n').map(l => l.replace(/\r$/, '')).filter(l => l.trim());
-            if (lines.length < 2) {
+            // El delimitador se detecta sobre la primera línea física (el
+            // encabezado no tiene campos multilínea); el parseo de verdad es
+            // sobre el texto entero para respetar los campos entrecomillados
+            // con saltos adentro.
+            const delim = detectarDelimitador(String(text).split('\n')[0]);
+            const lineas = parseCSVTexto(text, delim);
+            if (lineas.length < 2) {
                 return { ok: false, motivo: 'El archivo está vacío o tiene una sola fila. Tiene que traer la fila de encabezados y al menos un contacto.' };
             }
-            const delim = detectarDelimitador(lines[0]);
-            const hs = parseCSVLine(lines[0], delim).map(h => h.replace(/^\ufeff/, ''));
-            if (hs.filter(h => h).length < 2) {
+            const hsCrudos = lineas[0].map(h => h.replace(/^\ufeff/, ''));
+            if (hsCrudos.filter(h => h).length < 2) {
                 return { ok: false, motivo: 'No se pudieron separar las columnas. ¿Seguro que es un CSV? Se esperan columnas separadas por <code>;</code> o <code>,</code>.' };
             }
+            // Encabezados repetidos en el archivo de ENTRADA: antes la segunda
+            // columna pisaba a la primera en silencio al armar el objeto fila
+            // (la regla de headersUnicos sólo protegía la salida). Ahora la
+            // repetida se renombra ("Mensaje" → "Mensaje_2") y se avisa.
+            const hs = headersUnicos(hsCrudos);
+            const huboRenombradas = hs.some((h, i) => h !== hsCrudos[i]);
             const filas = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i], delim);
+            for (let i = 1; i < lineas.length; i++) {
+                const values = lineas[i];
                 const row = {};
                 hs.forEach((h, idx) => { row[h] = values[idx] || ''; });
                 filas.push(row);
@@ -1063,7 +1079,9 @@
             phoneColNames = tels;
             selectedPhoneCols = new Set(tels);
             msgColName = detectarColumnaMensaje(hs, filas);
-            return { ok: true };
+            const res = { ok: true };
+            if (huboRenombradas) res.aviso = 'El archivo traía columnas con el mismo nombre: se renombraron las repetidas (ej: "Mensaje" → "Mensaje_2") para no perder datos.';
+            return res;
         }
 
         function formatPeso(val) {
@@ -1389,19 +1407,29 @@
             if (esExcel) { leerXlsx(file); return; }
             const falloLectura = () => fallarCarga('No se pudo leer <strong>' + escHtml(file.name) + '</strong>. Probá de nuevo.');
             leerTexto(file, 'UTF-8', texto => {
-                if (pareceBinario(texto)) {
-                    // Un .xlsx renombrado a .csv es un xlsx perfectamente valido:
-                    // en vez de mandarlo a convertir, se abre. Los bytes mandan
-                    // sobre la extension, para bien y para mal.
-                    if (texto.charCodeAt(0) === 0x50 && texto.charCodeAt(1) === 0x4B && soportaXlsx()) {
-                        leerXlsx(file);
-                        return;
-                    }
+                const esPk = texto.charCodeAt(0) === 0x50 && texto.charCodeAt(1) === 0x4B;
+                const esOle = texto.charCodeAt(0) === 0xD0 && texto.charCodeAt(1) === 0xCF;
+                // Un .xlsx renombrado a .csv es un xlsx perfectamente valido:
+                // en vez de mandarlo a convertir, se abre. Los bytes mandan
+                // sobre la extension, para bien y para mal.
+                if (esPk && soportaXlsx()) { leerXlsx(file); return; }
+                if (texto.indexOf('\u0000') !== -1) {
+                    // Los bytes nulos son la firma de un CSV guardado como
+                    // UTF-16 (o de un binario): antes caían en el cartel de
+                    // "Excel viejo", que mandaba al usuario por un camino
+                    // equivocado.
+                    fallarCarga('<strong>' + escHtml(file.name) + '</strong> parece estar guardado como <strong>UTF-16</strong> (o es un archivo binario).<br>En Excel hacé <em>Archivo → Guardar como → CSV UTF-8 (delimitado por comas)</em>.');
+                    return;
+                }
+                if (esPk || esOle || (pareceBinario(texto) && texto.indexOf('\ufffd') === -1)) {
                     fallarCarga('<strong>' + escHtml(file.name) + '</strong> termina en <code>.csv</code> pero por dentro es otro formato (un Excel viejo u otro binario).<br>Volvé a guardarlo desde Excel como <em>CSV (delimitado por comas)</em> o como <code>.xlsx</code>.');
                     return;
                 }
                 // Excel en Windows guarda en ANSI: leido como UTF-8 los acentos
                 // salen rotos y "Panadería" llega al cliente como "Panader?a".
+                // El reintento en windows-1252 va ANTES de declararlo binario:
+                // un CSV muy cargado de tildes supera el umbral del 20% de
+                // \ufffd y antes rebotaba con el cartel equivocado.
                 if (texto.indexOf('\ufffd') !== -1) {
                     leerTexto(file, 'windows-1252', t2 => procesarTexto(file, t2), () => procesarTexto(file, texto));
                 } else {
@@ -1413,13 +1441,14 @@
         function procesarTexto(file, texto) {
             const res = parseCSV(texto);
             if (!res.ok) { fallarCarga(res.motivo); return; }
+            if (res.aviso) showToast(res.aviso);
             // Se cuenta con la MISMA funcion que despues separa para
             // exportar: si no, el numero que se muestra al cargar el
             // archivo no coincide con las filas que salen en el CSV.
             let totalPhones = 0;
             rawData.forEach(row => {
                 phoneColNames.forEach(col => {
-                    totalPhones += separarNumeros(row[col]).length;
+                    totalPhones += numerosValidos(row[col]).length;
                 });
             });
             if (!totalPhones) {
@@ -1458,7 +1487,7 @@
 
         function resetFile() {
             rawData = []; headers = []; extraCols = new Set();
-            msgColName = ''; useFileMsg = false; sinMensaje = 0;
+            msgColName = ''; useFileMsg = false; sinMensaje = 0; telInvalidos = 0;
             pintarUseFile();
             phoneColNames = PHONE_COLS_DEFAULT.slice();
             selectedPhoneCols = new Set(phoneColNames); contactRows = [];
@@ -1510,10 +1539,12 @@
                 // Misma funcion que usa la exportacion, por el mismo motivo:
                 // el numerito del chip tiene que ser lo que va a salir.
                 let count = 0;
-                rawData.forEach(r => { count += separarNumeros(r[col]).length; });
+                rawData.forEach(r => { count += numerosValidos(r[col]).length; });
                 const chip = document.createElement('div');
                 chip.className = 'chip' + (count > 0 ? ' active' : '');
-                chip.innerHTML = `${col}<span class="chip-count">${count}</span>`;
+                // El nombre de la columna viene del archivo subido: escapado,
+                // si no un encabezado crafteado inyecta HTML en la página.
+                chip.innerHTML = escHtml(col) + '<span class="chip-count">' + count + '</span>';
                 if (count === 0) { selectedPhoneCols.delete(col); chip.style.opacity = '0.3'; }
                 else { chip.tabIndex = 0; chip.setAttribute('role', 'button'); }
                 chip.addEventListener('click', () => {
@@ -1743,6 +1774,7 @@
                     const insert = `{${h}}`;
                     ta.value = ta.value.substring(0, start) + insert + ta.value.substring(end);
                     messages[activeMsg] = ta.value;
+                    guardarMensajes();   // el cambio es programático: no dispara 'input'
                     ta.focus();
                     ta.selectionStart = ta.selectionEnd = start + insert.length;
                     updatePreview();
@@ -1817,11 +1849,21 @@
             return salida;
         }
 
+        // Sólo se exportan móviles de 10 dígitos: cualquier otro largo
+        // llegaba a HERMES como fila inválida sin aviso ("459512" salía como
+        // "+549459512", y un dígito de más —typo típico— como 11 dígitos).
+        // Se descartan y se cuentan, para avisar al lado del botón descargar.
+        function numerosValidos(valor) {
+            return separarNumeros(valor).filter(n => n.length === 10);
+        }
+
         let sinMensaje = 0;   // filas descartadas por no traer mensaje en la columna
+        let telInvalidos = 0; // números descartados por no quedar en 10 dígitos
 
         function buildContactRows() {
             contactRows = [];
             sinMensaje = 0;
+            telInvalidos = 0;
             rawData.forEach((row, rowIdx) => {
                 // Usando la columna del archivo, una fila sin mensaje no se
                 // exporta: HERMES la tomaria y abriria el chat para no escribir
@@ -1836,9 +1878,11 @@
                     // (23 digitos) y una columna que ya viniera en formato
                     // internacional daba "+5495492616414595". Los dos casos
                     // llegaban a HERMES y no se podia enviar. Ahora se separa y
-                    // se normaliza en TODAS las columnas.
+                    // se normaliza en TODAS las columnas, y lo que no queda en
+                    // 10 dígitos no se exporta (se cuenta en telInvalidos).
                     separarNumeros(val).forEach(number => {
-                        contactRows.push({ rowIdx, row, col, number });
+                        if (number.length === 10) contactRows.push({ rowIdx, row, col, number });
+                        else telInvalidos++;
                     });
                 });
             });
@@ -1847,7 +1891,10 @@
         }
 
         function updateExportStats() {
-            exportStats.innerHTML = `&rarr; <span>${contactRows.length}</span> filas a exportar`;
+            exportStats.innerHTML = `&rarr; <span>${contactRows.length}</span> filas a exportar`
+                + (telInvalidos
+                    ? ` · <span style="color:var(--danger)">${telInvalidos} ${telInvalidos === 1 ? 'número descartado' : 'números descartados'} (no tenían 10 dígitos)</span>`
+                    : '');
             pintarResumenes();
             updateProgress();
         }
@@ -1913,57 +1960,48 @@
         }
 
         // ========== EXPORT ==========
-        // La descarga queda bloqueada hasta contestar la encuesta (una vez por ejecutivo)
-        // y despues pasa por el modal de donacion en cada descarga.
+        // Flujo de descarga: botón → cartel de la rifa (5 segundos con cuenta
+        // regresiva) → modal del nombre del archivo → baja el CSV. Nada más:
+        // la encuesta que bloqueaba la primera descarga y el pedido de
+        // donación se eliminaron el 2026-09-10.
         document.getElementById('btnExportCSV').addEventListener('click', () => {
             if (!contactRows.length) { showToast('No hay teléfonos para exportar'); return; }
             if (!mensajeListo()) { showToast('Escribí el mensaje antes de descargar'); return; }
-            if (fbAlreadySent()) { openDonation(); return; }
-            pendingExport = true;
-            openFeedback(true);
+            openRifa();
         });
 
-        // ========== ANTES DE DESCARGAR ==========
-        // La donacion se pide UNA VEZ POR SEMANA por ejecutivo, dentro del mismo
-        // modal del nombre. Pedirla en cada descarga (eran 2 ventanas por bajada)
-        // es parte de lo que se sentia como "demasiados pasos".
-        const DON_ALIAS = 'palta.camote.mp';
-        const DON_DIAS = 7;
-        const donBlock = document.getElementById('donBlock');
+        // ========== CARTEL DE LA RIFA (antes de elegir el nombre) ==========
+        // Se muestra el afiche de la rifa solidaria 5 segundos con la cuenta
+        // regresiva visible; se puede cerrar antes con el botón, con Escape o
+        // con un clic afuera. Al cerrarse (solo o a mano) se pasa al modal del
+        // nombre, y de ahí se descarga.
+        const rifaOverlay = document.getElementById('rifaOverlay');
+        const rifaCount = document.getElementById('rifaCount');
+        const RIFA_SEGUNDOS = 5;
+        let rifaTimer = null;
 
-        function donKey() { return 'maverix_don_' + (currentUser || 'anon'); }
-
-        function donToca() {
-            try {
-                const t = parseInt(localStorage.getItem(donKey()) || '0', 10);
-                return !(t > 0 && (Date.now() - t) < DON_DIAS * 86400000);
-            } catch (e) { return true; }
+        function openRifa() {
+            rifaOverlay.classList.add('show');
+            let n = RIFA_SEGUNDOS;
+            rifaCount.textContent = 'Continuamos en ' + n + '…';
+            clearInterval(rifaTimer);
+            rifaTimer = setInterval(() => {
+                n--;
+                if (n <= 0) { closeRifa(); return; }
+                rifaCount.textContent = 'Continuamos en ' + n + '…';
+            }, 1000);
         }
 
-        function openDonation() {
-            const pedir = donToca();
-            if (donBlock) donBlock.style.display = pedir ? '' : 'none';
-            if (pedir) { try { localStorage.setItem(donKey(), String(Date.now())); } catch (e) {} }
+        function closeRifa() {
+            if (rifaTimer) { clearInterval(rifaTimer); rifaTimer = null; }
+            rifaOverlay.classList.remove('show');
             openFileName();
         }
-        document.getElementById('donAlias').addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); }
-        });
-        document.getElementById('donAlias').addEventListener('click', () => {
-            const done = () => showToast('Alias copiado: ' + DON_ALIAS);
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(DON_ALIAS).then(done).catch(done);
-            } else {
-                try {
-                    const i = document.createElement('input');
-                    i.value = DON_ALIAS;
-                    document.body.appendChild(i);
-                    i.select();
-                    document.execCommand('copy');
-                    i.remove();
-                    done();
-                } catch (e) {}
-            }
+
+        document.getElementById('rifaSkip').addEventListener('click', closeRifa);
+        rifaOverlay.addEventListener('click', e => { if (e.target === rifaOverlay) closeRifa(); });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && rifaOverlay.classList.contains('show')) closeRifa();
         });
 
         // ========== NOMBRE DEL ARCHIVO (ultimo paso antes de descargar) ==========
@@ -2047,13 +2085,18 @@
         function exportCSV(fileName) {
             if (!contactRows.length) { showToast('No hay teléfonos para exportar'); return; }
             if (!mensajeListo()) { showToast('Escribí el mensaje antes de descargar'); return; }
+            // Defensa final: aunque buildContactRows ya descarta lo que no
+            // queda en 10 dígitos, acá se vuelve a filtrar. Lo que baja es
+            // lo que HERMES puede enviar, ni una fila más.
+            const filas = contactRows.filter(c => c.number && c.number.length === 10);
+            if (!filas.length) { showToast('No hay teléfonos válidos para exportar'); return; }
             const tpls = getTemplates();
             const sep = ';';
             const extraArr = headers.filter(h => extraCols.has(h));
             const headerRow = headersUnicos(['Telefono', 'Mensaje', ...extraArr]);
             const lines = [headerRow.map(csvField).join(sep)];
 
-            contactRows.forEach((c, i) => {
+            filas.forEach((c, i) => {
                 // c.number YA viene normalizado a 10 digitos desde
                 // buildContactRows: aca solo se le pone el prefijo y el envoltorio
                 // ="...," que evita que Excel se coma el + y los ceros.
@@ -2074,92 +2117,69 @@
             // El nombre lo elige el usuario en el modal; si por algo llega vacio
             // (una llamada vieja), cae al de siempre.
             a.download = fileName || (defaultFileName() + '.csv');
+            // El anchor va al DOM y el revoke espera un segundo: revocar en el
+            // instante del click podía cancelar la descarga en Firefox viejo.
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
-            showToast('CSV descargado · ' + contactRows.length + ' teléfonos');
-            logUsage('download', { rows: contactRows.length });
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            showToast('CSV descargado · ' + filas.length + ' teléfonos');
+            logUsage('download', { rows: filas.length });
             exported = true;
             updateProgress();
             launchConfetti();
         }
 
-        // ========== FEEDBACK ==========
-        const fbOverlay = document.getElementById('fbOverlay');
-        const fbStars = document.getElementById('fbStars');
-        const fbText = document.getElementById('fbText');
-        const fbSend = document.getElementById('fbSend');
-        const fbForm = document.getElementById('fbForm');
-        const fbThanks = document.getElementById('fbThanks');
-        const fbSub = document.getElementById('fbSub');
-        let fbRating = 0;
-        let pendingExport = false;
+        // ========== SUGERENCIAS ==========
+        // Reemplaza a la encuesta de estrellas que bloqueaba la primera
+        // descarga (eliminada el 2026-09-10): obligar el comentario compraba
+        // ruido ("asd", "ñññññ"), no señal. Ahora es un apartado grande,
+        // voluntario y siempre visible en la página. Manda al mismo
+        // /api/feedback de siempre, solo texto (sin estrellas).
+        // Mismo criterio de resiliencia que la encuesta: timeout de 8s y si
+        // el backend no responde se avisa, sin bloquear nada.
+        const sugForm = document.getElementById('sugForm');
+        const sugText = document.getElementById('sugText');
+        const sugSend = document.getElementById('sugSend');
+        const sugThanks = document.getElementById('sugThanks');
+        const sugUserName = document.getElementById('sugUserName');
 
-        // La encuesta es POR EJECUTIVO: cada usuario la contesta una vez
-        // (antes era por navegador y en maquinas compartidas quedaba mal atribuida).
-        function fbSentKey() { return 'maverix_fb_sent_' + (currentUser || 'anon'); }
-        function fbAlreadySent() {
-            try { return !!localStorage.getItem(fbSentKey()); } catch (e) { return false; }
-        }
+        function pintarSugUser() { if (sugUserName) sugUserName.textContent = currentUser || '—'; }
 
-        const fbWord = document.getElementById('fbWord');
-        const RATING_WORDS = { 1: 'No me sirvió', 2: 'Flojo', 3: 'Está bien', 4: 'Muy útil', 5: 'Excelente' };
-
-        // Enviar recien se habilita con estrellas + comentario (el comentario es obligatorio)
-        function paintStars() {
-            fbStars.querySelectorAll('.fb-star').forEach(s => {
-                s.classList.toggle('on', Number(s.dataset.val) <= fbRating);
-            });
-            fbWord.textContent = fbRating ? RATING_WORDS[fbRating] : '';
-            checkSend();
-        }
-        // Antes el comentario era obligatorio (>=3 caracteres) Y bloqueaba la
-        // descarga: de 95 comentarios, ~40 son "...", "asd" o "ñññññ". Se pierde
-        // cantidad y se gana señal — las estrellas siguen siendo obligatorias.
-        function checkSend() {
-            fbSend.disabled = fbRating === 0;
-        }
-        fbText.addEventListener('input', checkSend);
-        fbStars.querySelectorAll('.fb-star').forEach(s => {
-            s.addEventListener('click', () => { fbRating = Number(s.dataset.val); paintStars(); });
-            s.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.click(); }
-            });
-            s.addEventListener('mouseenter', () => {
-                const v = Number(s.dataset.val);
-                fbStars.querySelectorAll('.fb-star').forEach(o => o.classList.toggle('on', Number(o.dataset.val) <= v));
-                fbWord.textContent = RATING_WORDS[v];
+        if (sugSend) sugSend.addEventListener('click', () => {
+            const text = sugText.value.trim();
+            if (!text) { showToast('Escribí la sugerencia antes de enviar'); sugText.focus(); return; }
+            sugSend.disabled = true;
+            // Timeout de 8s asi un backend colgado no deja el boton muerto
+            const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+            const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
+            fetch(FEEDBACK_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, user: currentUser }),
+                signal: ctrl ? ctrl.signal : undefined
+            }).then(r => {
+                if (timer) clearTimeout(timer);
+                if (!r.ok) throw new Error('http ' + r.status);
+                sugForm.style.display = 'none';
+                sugThanks.style.display = 'block';
+            }).catch(() => {
+                if (timer) clearTimeout(timer);
+                sugSend.disabled = false;
+                showToast('No se pudo enviar. Reintentá.');
             });
         });
-        fbStars.addEventListener('mouseleave', paintStars);
 
-        function closeFeedback() {
-            fbOverlay.classList.remove('show');
-        }
-
-        // Salida de la encuesta cuando está bloqueando una descarga: el que no
-        // quiere contestar no queda atrapado — cierra y la descarga se aborta.
-        const fbCancel = document.getElementById('fbCancel');
-        fbCancel.addEventListener('click', () => {
-            pendingExport = false;
-            closeFeedback();
-            showToast('Descarga cancelada');
-        });
-
-        function openFeedback(gating) {
-            fbThanks.style.display = 'none';
-            fbForm.style.display = '';
-            fbRating = 0; paintStars();
-            fbText.value = '';
-            fbSend.disabled = true;
-            fbSub.textContent = gating
-                ? 'Contestá y tu archivo se descarga solo. Te lleva unos segundos.'
-                : 'Tu opinión ayuda a mejorar la herramienta.';
-            fbSend.textContent = gating ? 'Enviar y descargar' : 'Enviar';
-            fbCancel.style.display = gating ? '' : 'none';
-            fbOverlay.classList.add('show');
-        }
+        // El link del footer baja hasta el apartado y enfoca la caja.
         const footerFeedback = document.getElementById('footerFeedback');
-        if (footerFeedback) footerFeedback.addEventListener('click', e => { e.preventDefault(); openFeedback(); });
+        if (footerFeedback) footerFeedback.addEventListener('click', e => {
+            e.preventDefault();
+            const s = document.getElementById('sugerencias');
+            if (!s) return;
+            const suave = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            s.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'center' });
+            setTimeout(() => sugText.focus(), suave ? 500 : 0);
+        });
 
         // ========== TUTORIAL ==========
         const tutOverlay = document.getElementById('tutOverlay');
@@ -2173,63 +2193,7 @@
         tutOverlay.addEventListener('click', e => { if (e.target === tutOverlay) closeTutorial(); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && tutOverlay.classList.contains('show')) closeTutorial(); });
 
-        // Si la encuesta esta bloqueando la descarga, el clic afuera NO la
-        // cierra: se contesta o se toca "ahora no" (que aborta la descarga).
-        // El clic afuera solo cierra cuando se abrio voluntariamente del footer.
-        fbOverlay.addEventListener('click', e => { if (e.target === fbOverlay && !pendingExport) closeFeedback(); });
-
-        // Contador de fallos. Si el backend esta caido, no dejamos al usuario
-        // atrapado: tras 2 intentos fallidos lo marcamos local y dejamos bajar.
-        let fbFailCount = 0;
-
-        function fbDoneAndMaybeExport(localOnly) {
-            try { localStorage.setItem(fbSentKey(), '1'); } catch (e) {}
-            fbForm.style.display = 'none';
-            fbThanks.style.display = 'block';
-            if (localOnly) {
-                // Si guardamos solo local, avisamos sutil pero igual dejamos descargar
-                const sub = fbThanks.querySelector('.fb-sub');
-                if (sub) sub.textContent = 'Guardada localmente. Igual te dejamos descargar.';
-            }
-            // Con descarga pendiente: gracias breve y se pasa al modal de donacion.
-            const wasPending = pendingExport;
-            pendingExport = false;
-            setTimeout(() => {
-                fbOverlay.classList.remove('show');
-                if (wasPending) openDonation();
-            }, wasPending ? 1200 : 2200);
-        }
-
-        fbSend.addEventListener('click', () => {
-            if (fbRating === 0) return;
-            fbSend.disabled = true;
-            // Timeout de 8s asi un backend colgado no atrapa al usuario
-            const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-            const timer = ctrl ? setTimeout(() => ctrl.abort(), 8000) : null;
-            fetch(FEEDBACK_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rating: fbRating, text: fbText.value.trim(), user: currentUser }),
-                signal: ctrl ? ctrl.signal : undefined
-            }).then(r => {
-                if (timer) clearTimeout(timer);
-                if (!r.ok) throw new Error('http ' + r.status);
-                fbFailCount = 0;
-                fbDoneAndMaybeExport(false);
-            }).catch(() => {
-                if (timer) clearTimeout(timer);
-                fbFailCount++;
-                if (fbFailCount >= 2) {
-                    // Backend no responde: que la app NO quede inutilizable
-                    showToast('Servidor lento, guardada localmente');
-                    fbDoneAndMaybeExport(true);
-                } else {
-                    fbSend.disabled = false;
-                    showToast('No se pudo enviar. Reintentá.');
-                }
-            });
-        });
-
+        // ========== CSV: SERIALIZADORES ==========
         // El mensaje va SIN comillas de CSV a propósito.
         //
         // Antes se escapaba como manda el estándar (envolver en comillas si el
@@ -2266,7 +2230,10 @@
         }
 
         function csvField(val) {
-            val = String(val);
+            // Misma regla que csvMessage: LF, nunca CRLF. Un \r suelto en una
+            // columna extra viajaba al CSV final y el csv.DictReader de HERMES
+            // lo leía como un carácter más.
+            val = String(val).replace(/\r\n?/g, '\n');
             if (val.includes(';') || val.includes('"') || val.includes('\n'))
                 return '"' + val.replace(/"/g, '""') + '"';
             return val;
@@ -2342,7 +2309,7 @@
             } catch (e) {}
         }
 
-        function paintFooterUser() { footerUserName.textContent = currentUser || '—'; }
+        function paintFooterUser() { footerUserName.textContent = currentUser || '—'; pintarSugUser(); }
 
         function hideAc() { gateList.classList.remove('show'); gateList.innerHTML = ''; acMatches = []; acSel = -1; }
 

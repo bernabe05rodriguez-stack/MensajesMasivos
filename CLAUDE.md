@@ -6,7 +6,7 @@ Se carga solo al trabajar en este repo. Info general y accesos: `proyectos/Cread
 
 ## Qué es
 
-Herramienta web para los ejecutivos de MAVERIX: suben un CSV **o un Excel** y les devuelve teléfonos `+549` con mensajes personalizados, listos para cargar en HERMES. Gate por ejecutivo (215 usuarios), encuesta por ejecutivo, panel de uso en `/admin`.
+Herramienta web para los ejecutivos de MAVERIX: suben un CSV **o un Excel** y les devuelve teléfonos `+549` con mensajes personalizados, listos para cargar en HERMES. Gate por ejecutivo (215 usuarios), cartel de la rifa solidaria (5 segundos) antes de cada descarga, apartado de sugerencias en la página y panel de uso en `/admin`.
 
 La pantalla son **tres pasos** (archivo → mensaje → descargar). Las columnas de teléfono y las extra son bloques **plegados** dentro del paso 1 y del 3: hasta el 2026-09-01 eran los pasos 2 y 4 numerados.
 
@@ -52,7 +52,7 @@ Node puro (`http`/`fs`), sin dependencias npm. Imagen `node:20-alpine`, build de
      `node`. Así el test no se desincroniza del código que corre de verdad.
 
 7. **Un backend caído no debe inutilizar la herramienta.**
-   La encuesta y la telemetría usan `AbortController` con timeout + contador de fallos: tras N reintentos guardan local y dejan seguir. El patrón completo de resiliencia (uncaughtException que no mata, clientError, fallback de GET a `index.html`, graceful SIGTERM, HEALTHCHECK) está en el commit `eda083e`.
+   Las sugerencias y la telemetría usan `AbortController` con timeout: si el backend no responde, se avisa y nada se bloquea. El patrón completo de resiliencia (uncaughtException que no mata, clientError, fallback de GET a `index.html`, graceful SIGTERM, HEALTHCHECK) está en el commit `eda083e`.
 
 8. **Todo archivo que entra pasa por las tres puertas de la carga.**
    El `accept=".csv"` del input **no se aplica al arrastrar**: por ahí entra cualquier
@@ -94,8 +94,8 @@ Node puro (`http`/`fs`), sin dependencias npm. Imagen `node:20-alpine`, build de
 
 ## Cosas que se preguntan seguido
 
-- *"No me sale la encuesta"* → ese ejecutivo **ya calificó en ese navegador** (flag `maverix_fb_sent_<user>`). Es una vez por ejecutivo, a propósito. Las estrellas son obligatorias; **el comentario NO** (era obligatorio hasta el 2026-09-01 y llenó el buzón de "...", "asd" y "ñññññ": 40 de 95).
-- *"No me pide más la donación"* → se muestra **una vez por semana** por ejecutivo (`maverix_don_<user>`), dentro del mismo modal del nombre del archivo. Antes eran dos ventanas en cada una de las ~400 descargas.
+- *"Salió un cartel de una rifa al descargar"* → es a propósito: el afiche de la rifa solidaria (`rifa.jpeg`, Jockey Club Mendoza) se muestra 5 segundos con cuenta regresiva antes de pedir el nombre del archivo. Se cierra solo o con «Continuar»/Escape/clic afuera. Para cambiar el afiche: reemplazar `rifa.jpeg` y redeploy (está en el `COPY` del Dockerfile y lo sirve `server.js` en `/rifa.jpeg`).
+- *"¿Dónde quedó la encuesta?"* → se eliminó el 2026-09-10 junto con el pedido de donación. Ahora hay un apartado grande de sugerencias al final de la página (voluntario, solo texto, mismo `/api/feedback`; las entradas nuevas llegan **sin estrellas**, y el `/admin` las muestra como "sugerencia").
 - *"Se acordó de mi mensaje"* → sí: `maverix_msg_<user>` en `localStorage`. No viaja al servidor.
 - Agregar o sacar ejecutivos → editar `EJECUTIVOS` en `index.html` + redeploy.
 - El `ADMIN_KEY` se deja sin rotar a propósito: solo mide uso, no protege datos sensibles.

@@ -30,7 +30,7 @@ function extraerConst(nombre) {
   return m[0];
 }
 
-const FNS = ['parseCSVLine', 'detectarDelimitador', 'normNombreCol', 'detectarColumnasTelefono',
+const FNS = ['parseCSVLine', 'parseCSVTexto', 'detectarDelimitador', 'normNombreCol', 'detectarColumnasTelefono',
   'detectarColumnaMensaje', 'parseCSV', 'normalizarNumero', 'separarNumeros', 'validarExtension',
   'pareceBinario', 'escHtml', 'headersUnicos'];
 const codigo = [
@@ -164,6 +164,36 @@ t('no distingue mayusculas',
 t('tres iguales: _2 y _3',
   JSON.stringify(F.headersUnicos(['Mensaje','Mensaje','Mensaje'])) === '["Mensaje","Mensaje_2","Mensaje_3"]',
   F.headersUnicos(['Mensaje','Mensaje','Mensaje']));
+
+console.log('--- 8. campos multilinea entrecomillados (RFC 4180) ---');
+r = F.parseCSV(['Cuenta;Telefono_1;Mensaje',
+  '1001;2616414595;"Hola Juan,',
+  'te escribimos por tu cuenta."',
+  '1002;2616414596;Hola Ana'].join('\n'));
+t('un campo con salto adentro NO parte la fila', r.ok === true && F.st().rawData.length === 2, F.st().rawData);
+t('el salto queda dentro del campo',
+  F.st().rawData[0]['Mensaje'] === 'Hola Juan,\nte escribimos por tu cuenta.', F.st().rawData[0]);
+t('la fila siguiente no se corre', F.st().rawData[1]['Telefono_1'] === '2616414596', F.st().rawData[1]);
+
+r = F.parseCSV('Cuenta;Telefono_1\r\n1001;2616414595\r\n1002;2616414596\r\n');
+t('CRLF se banca', r.ok === true && F.st().rawData.length === 2 && F.st().rawData[1]['Telefono_1'] === '2616414596', F.st().rawData);
+
+// Lo que escribe filasACsv (el camino del xlsx) lo tiene que leer parseCSV:
+// una celda con Alt+Enter viaja entrecomillada y con el salto adentro.
+r = F.parseCSV(['Cuenta;Telefono_1;Nota',
+  '1001;2616414595;"linea 1',
+  'linea 2"',
+  '1002;2616414596;sin nota'].join('\n'));
+t('camino xlsx: celda con Alt+Enter no corrompe', r.ok === true && F.st().rawData.length === 2
+  && F.st().rawData[0]['Nota'] === 'linea 1\nlinea 2', F.st().rawData);
+
+console.log('--- 9. encabezados duplicados en la entrada ---');
+r = F.parseCSV('Cuenta;Telefono_1;Mensaje;Mensaje\n1001;2616414595;Hola;Chau');
+t('la segunda se renombra, no pisa',
+  r.ok === true && JSON.stringify(F.st().headers) === '["Cuenta","Telefono_1","Mensaje","Mensaje_2"]', F.st().headers);
+t('ninguna de las dos pierde su dato',
+  F.st().rawData[0]['Mensaje'] === 'Hola' && F.st().rawData[0]['Mensaje_2'] === 'Chau', F.st().rawData[0]);
+t('se avisa la renombrada', r.aviso && /Mensaje_2/.test(r.aviso), r.aviso);
 
 console.log('\n' + ok + ' OK, ' + fail + ' fallas');
 process.exit(fail ? 1 : 0);
