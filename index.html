@@ -415,8 +415,8 @@
         .btn-send:disabled { opacity: 0.45; cursor: not-allowed; }
 
         /* ===== Cartel de la rifa (antes de descargar) ===== */
-        .rifa-modal { max-width: 430px; padding: 16px; }
-        .rifa-img { display: block; width: 100%; max-height: 66vh; object-fit: contain; border-radius: var(--r-control); }
+        .rifa-modal { max-width: 600px; padding: 18px; }
+        .rifa-img { display: block; width: 100%; max-height: 78vh; object-fit: contain; border-radius: var(--r-control); }
         .rifa-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
         .rifa-count { font-family: var(--mono); font-size: 0.84rem; color: var(--muted); }
 
@@ -789,7 +789,7 @@
         <div class="fb-modal rifa-modal" role="dialog" aria-modal="true" aria-label="Rifa solidaria Con Futsal">
             <img src="/rifa.jpeg" class="rifa-img" alt="Rifa solidaria Con Futsal del Jockey Club Mendoza: 500 números a $5.000, se sortea el 20 de octubre. Alias: turquia.gc">
             <div class="rifa-foot">
-                <span class="rifa-count" id="rifaCount">Continuamos en 5&hellip;</span>
+                <span class="rifa-count" id="rifaCount">Continuamos en 7&hellip;</span>
                 <button class="btn-send" id="rifaSkip">Continuar</button>
             </div>
         </div>
@@ -1960,7 +1960,7 @@
         }
 
         // ========== EXPORT ==========
-        // Flujo de descarga: botón → cartel de la rifa (5 segundos con cuenta
+        // Flujo de descarga: botón → cartel de la rifa (7 segundos con cuenta
         // regresiva) → modal del nombre del archivo → baja el CSV. Nada más:
         // la encuesta que bloqueaba la primera descarga y el pedido de
         // donación se eliminaron el 2026-09-10.
@@ -1971,13 +1971,13 @@
         });
 
         // ========== CARTEL DE LA RIFA (antes de elegir el nombre) ==========
-        // Se muestra el afiche de la rifa solidaria 5 segundos con la cuenta
+        // Se muestra el afiche de la rifa solidaria 7 segundos con la cuenta
         // regresiva visible; se puede cerrar antes con el botón, con Escape o
         // con un clic afuera. Al cerrarse (solo o a mano) se pasa al modal del
         // nombre, y de ahí se descarga.
         const rifaOverlay = document.getElementById('rifaOverlay');
         const rifaCount = document.getElementById('rifaCount');
-        const RIFA_SEGUNDOS = 5;
+        const RIFA_SEGUNDOS = 7;
         let rifaTimer = null;
 
         function openRifa() {
